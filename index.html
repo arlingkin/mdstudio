@@ -27,6 +27,10 @@
     <button class="btn" type="button" id="btn-new" data-i18n="act.new"></button>
     <button class="btn" type="button" id="btn-open" data-i18n="act.open"></button>
     <button class="btn" type="button" id="btn-folder" data-i18n="act.folder"></button>
+    <button class="btn" type="button" id="btn-drive" data-i18n="act.drive"></button>
+    <button class="btn" type="button" id="btn-todrive" data-i18n="act.todrive"></button>
+    <span class="sync" id="sync" role="status"></span>
+    <button class="btn" type="button" id="btn-auto" aria-pressed="true" data-i18n="act.auto"></button>
     <button class="btn" type="button" id="btn-save" data-i18n="act.save"></button>
     <button class="btn" type="button" id="btn-theme" data-i18n="act.theme"></button>
     <button class="btn" type="button" id="btn-lang" data-i18n-label="act.lang"></button>
@@ -36,6 +40,10 @@
   <aside class="side">
     <div class="side-h" data-i18n="tree.title"></div>
     <nav id="tree" data-i18n-label="tree.title"></nav>
+    <div id="dwrap" hidden>
+      <div class="side-h"><span data-i18n="act.drive"></span> <button class="btn" type="button" id="btn-glogout" data-i18n="act.logout"></button></div>
+      <nav id="dtree" data-i18n-label="act.drive"></nav>
+    </div>
   </aside>
   <main class="work">
     <div class="tabs" id="tabs" role="tablist"></div>

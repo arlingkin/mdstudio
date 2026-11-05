@@ -114,6 +114,79 @@ const LocalSource = {
   }
 };
 
+const G = 'https://www.googleapis.com/drive/v3', GU = 'https://www.googleapis.com/upload/drive/v3';
+const GF = 'id,name,modifiedTime,version,mimeType,size';
+const FOLDER = 'application/vnd.google-apps.folder';
+let tok = null;
+const dirIds = new Map([['drive', 'root']]);
+async function driveToken(quiet) {
+  if (tok && tok.exp > Date.now() + 30000) return tok.value;
+  const r = await fetch('/api/auth/token', { method: 'POST', headers: { 'X-Requested-With': 'mdstudio' } }).catch(() => null);
+  if (!r) throw new Error('nobackend');
+  if (r.status === 401) { if (!quiet) location.assign('/api/auth/login'); throw new Error('login'); }
+  if (!r.ok) throw new Error(r.status === 500 ? 'nocfg' : 'nobackend');
+  const j = await r.json();
+  tok = { value: j.access_token, exp: Date.now() + j.expires_in * 1000 };
+  return tok.value;
+}
+async function dapi(url, o = {}, retry = true) {
+  const r = await fetch(url, { ...o, headers: { ...o.headers, Authorization: 'Bearer ' + await driveToken() } });
+  if (r.status === 401 && retry) { tok = null; return dapi(url, o, false); }
+  if (!r.ok) throw new Error('drive ' + r.status);
+  return r;
+}
+const dmeta = async id => (await dapi(`${G}/files/${id}?fields=${GF}`)).json();
+const mimeOf = p => isMd(p) ? 'text/markdown' : 'text/plain';
+const stamp = m => ({ version: m.version, modifiedTime: m.modifiedTime });
+const DriveSource = {
+  async list(path = 'drive') {
+    const q = encodeURIComponent(`'${dirIds.get(path) ?? 'root'}' in parents and trashed=false`);
+    const out = [];
+    let pt = '';
+    for (let i = 0; i < 5; i++) {
+      const r = await (await dapi(`${G}/files?q=${q}&orderBy=folder,name&pageSize=200&fields=nextPageToken,files(${GF})${pt}`)).json();
+      for (const x of r.files) {
+        const p = path + '/' + x.name.replace(/\//g, '_'), folder = x.mimeType === FOLDER;
+        if (folder) dirIds.set(p, x.id);
+        out.push({ ...x, folder, path: p });
+      }
+      if (!r.nextPageToken) break;
+      pt = '&pageToken=' + encodeURIComponent(r.nextPageToken);
+    }
+    return out;
+  },
+  async read(path) {
+    const f = S.files.get(path), m = await dmeta(f.src.id);
+    if (+m.size > MAXB) throw new Error('skip');
+    const text = await (await dapi(`${G}/files/${f.src.id}?alt=media`)).text();
+    f.src = { ...f.src, ...stamp(m) };
+    return text;
+  },
+  async write(path, content, force) {
+    const f = S.files.get(path), id = f.src.id, ct = mimeOf(path) + ';charset=UTF-8';
+    if (id && !force) {
+      const m = await dmeta(id);
+      if (m.version !== f.src.version || m.modifiedTime !== f.src.modifiedTime) { const e = new Error('conflict'); e.conflict = true; throw e; }
+    }
+    let r;
+    if (id) r = await dapi(`${GU}/files/${id}?uploadType=media&fields=${GF}`, { method: 'PATCH', headers: { 'Content-Type': ct }, body: content });
+    else {
+      const bd = 'mdstudio' + Date.now().toString(36);
+      const meta = JSON.stringify({ name: base(path), mimeType: mimeOf(path) });
+      r = await dapi(`${GU}/files?uploadType=multipart&fields=${GF}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'multipart/related; boundary=' + bd },
+        body: `--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${bd}\r\nContent-Type: ${ct}\r\n\r\n${content}\r\n--${bd}--`
+      });
+    }
+    const m = await r.json();
+    f.src = { type: 'drive', id: m.id, ...stamp(m) };
+    return m;
+  }
+};
+const EM = { nocfg: 'msg.nodrive', nobackend: 'msg.nobackend', login: 'msg.login', skip: 'msg.unsupported' };
+function errMsg(e) { return t(e.conflict ? 'msg.conflictno' : EM[e.message] || 'msg.err'); }
+
 async function importLocal(path, handle) {
   handles.set(path, handle);
   const old = S.files.get(path);
@@ -151,6 +224,98 @@ async function openFolder() {
     done(first, n, skipped);
   } catch (e) { if (e.name !== 'AbortError') toast(t('msg.err')); }
 }
+async function importDrive(m, path) {
+  if (m.mimeType.startsWith('application/vnd.google-apps') || BIN.test(m.name)) throw new Error('skip');
+  let f = [...S.files.values()].find(x => x.src.id === m.id);
+  const fresh = !f;
+  if (f && f.dirty) return f;
+  if (fresh) { f = { path: uniq(path), content: '', src: { type: 'drive', id: m.id }, dirty: false, updated: Date.now() }; S.files.set(f.path, f); }
+  try { f.content = await DriveSource.read(f.path); } catch (e) { if (fresh) S.files.delete(f.path); throw e; }
+  persist(f);
+  return f;
+}
+async function renderDir(path, ul) {
+  ul.replaceChildren();
+  for (const x of await DriveSource.list(path)) {
+    const li = document.createElement('li');
+    if (x.folder) {
+      const d = document.createElement('details'), s = document.createElement('summary'), sub = document.createElement('ul');
+      s.textContent = x.name;
+      d.append(s, sub);
+      d.addEventListener('toggle', () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = '1'; renderDir(x.path, sub).catch(e => toast(errMsg(e))); } });
+      li.append(d);
+    } else {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'node';
+      b.textContent = x.name;
+      b.title = x.path;
+      b.disabled = x.mimeType.startsWith('application/vnd.google-apps');
+      b.addEventListener('click', () => importDrive(x, x.path).then(f => openTab(f.path)).catch(e => toast(errMsg(e))));
+      li.append(b);
+    }
+    ul.append(li);
+  }
+}
+async function openDrive() {
+  try {
+    await driveToken();
+    const ul = document.createElement('ul');
+    dtree.replaceChildren(ul);
+    dwrap.hidden = false;
+    app.classList.add('tree-open');
+    await renderDir('drive', ul);
+  } catch (e) { toast(errMsg(e)); }
+}
+async function saveDrive(f, copy) {
+  let g = f;
+  if (copy && f.src.type !== 'drive') {
+    g = { path: uniq('drive/' + base(f.path)), content: f.content, src: { type: 'drive' }, dirty: true, updated: Date.now() };
+    S.files.set(g.path, g);
+  }
+  try {
+    try { await DriveSource.write(g.path, g.content); }
+    catch (e) { if (!e.conflict || !confirm(t('msg.conflict'))) throw e; await DriveSource.write(g.path, g.content, true); }
+  } catch (e) { if (g !== f) S.files.delete(g.path); throw e; }
+  g.dirty = false;
+  persist(g);
+  return g;
+}
+const saving = new Set(), timers = new Map(), paused = new Map();
+let auto = LS.get('mdstudio-auto', '1') === '1';
+function syncState() {
+  const f = cur(), el = $('#sync');
+  if (!f || f.src.type !== 'drive') { el.textContent = ''; return; }
+  el.textContent = t('sync.' + (saving.has(f.path) ? 'saving' : paused.get(f.path) || (f.dirty ? 'unsaved' : 'saved')));
+}
+function sched(f, ms = 2000) {
+  clearTimeout(timers.get(f.path));
+  if (auto && f.src.type === 'drive' && !paused.has(f.path)) timers.set(f.path, setTimeout(() => autoDrive(f), ms));
+}
+async function autoDrive(f) {
+  timers.delete(f.path);
+  if (!auto || !f.dirty || f.src.type !== 'drive' || saving.has(f.path) || paused.has(f.path)) return;
+  saving.add(f.path);
+  syncState();
+  const c = f.content;
+  let retry = false;
+  try {
+    await driveToken(true);
+    await DriveSource.write(f.path, c);
+    if (f.content === c) f.dirty = false;
+    persist(f);
+    renderTabs();
+    renderTree();
+  } catch (e) {
+    if (e.conflict) { paused.set(f.path, 'conflict'); toast(t('msg.conflictno')); }
+    else if (e.message === 'login') paused.set(f.path, 'login');
+    else retry = true;
+  } finally {
+    saving.delete(f.path);
+    if (f.dirty && !paused.has(f.path)) sched(f, retry ? 10000 : 2000);
+    syncState();
+  }
+}
 async function onPicked(files) {
   let last, n = 0, skipped = 0;
   for (const file of files) {
@@ -164,9 +329,18 @@ function done(f, n, skipped) {
   toast(t('msg.opened', { n }) + (skipped ? t('msg.skipped', { n: skipped }) : ''));
   if (f) openTab(f.path); else renderAll();
 }
-async function save(f = cur()) {
+async function save(f = cur(), toDrive = false) {
   if (!f) return;
   try {
+    if (toDrive || f.src.type === 'drive') {
+      saving.add(f.path);
+      let g;
+      try { g = await saveDrive(f, toDrive); } finally { saving.delete(f.path); }
+      paused.delete(g.path);
+      toast(t('msg.saved', { n: base(g.path) }));
+      if (g !== f) openTab(g.path); else { renderTabs(); renderTree(); syncState(); }
+      return;
+    }
     if (!handles.has(f.path) && window.showSaveFilePicker) {
       const h = await showSaveFilePicker({ suggestedName: base(f.path) });
       handles.set(f.path, h);
@@ -178,7 +352,7 @@ async function save(f = cur()) {
     renderTabs();
     renderTree();
     toast(t(r === 'file' ? 'msg.saved' : 'msg.downloaded', { n: base(f.path) }));
-  } catch (e) { if (e.name !== 'AbortError') toast(t('msg.err')); }
+  } catch (e) { if (e.name !== 'AbortError') toast(errMsg(e)); }
 }
 function newFile() {
   const n = prompt(t('prompt.name'), 'untitled.md');
@@ -189,7 +363,7 @@ function newFile() {
   ta.focus();
 }
 
-const app = $('#app'), ta = $('#ta'), hlc = $('#hl code'), wrap = $('#wrap'), pv = $('#pv'), doc = $('#doc'), tree = $('#tree'), tabsEl = $('#tabs'), status = $('#status');
+const app = $('#app'), ta = $('#ta'), hlc = $('#hl code'), wrap = $('#wrap'), pv = $('#pv'), doc = $('#doc'), tree = $('#tree'), dwrap = $('#dwrap'), dtree = $('#dtree'), tabsEl = $('#tabs'), status = $('#status');
 let toastT;
 function toast(m) {
   status.textContent = m;
@@ -323,13 +497,14 @@ function renderTree() {
 }
 function loadEditor() {
   const f = cur();
-  if (!f) { ta.value = ''; ta.disabled = true; app.dataset.kind = 'none'; doc.replaceChildren(); hlc.textContent = ''; return; }
+  if (!f) { ta.value = ''; ta.disabled = true; app.dataset.kind = 'none'; doc.replaceChildren(); hlc.textContent = ''; syncState(); return; }
   const md = isMd(f.path);
   ta.disabled = false;
   ta.wrap = md ? 'soft' : 'off';
   ta.value = f.content;
   app.dataset.kind = md ? 'md' : 'code';
   render();
+  syncState();
 }
 function renderAll() { renderTabs(); renderTree(); loadEditor(); }
 function openTab(p) {
@@ -373,6 +548,8 @@ ta.addEventListener('input', () => {
   f.content = ta.value;
   f.updated = Date.now();
   if (!f.dirty) { f.dirty = true; renderTabs(); renderTree(); }
+  sched(f);
+  syncState();
   clearTimeout(tp);
   tp = setTimeout(() => persist(f), 400);
   clearTimeout(tr);
@@ -401,6 +578,20 @@ $('#btn-new').addEventListener('click', newFile);
 $('#btn-open').addEventListener('click', openFiles);
 $('#btn-folder').addEventListener('click', openFolder);
 $('#btn-save').addEventListener('click', () => save());
+$('#btn-drive').addEventListener('click', openDrive);
+$('#btn-todrive').addEventListener('click', () => save(cur(), true));
+$('#btn-auto').addEventListener('click', () => {
+  auto = !auto;
+  LS.set('mdstudio-auto', auto ? '1' : '0');
+  $('#btn-auto').setAttribute('aria-pressed', auto);
+  if (auto) S.files.forEach(f => { if (f.dirty) sched(f, 0); }); else { timers.forEach(clearTimeout); timers.clear(); }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden && auto) S.files.forEach(f => { if (f.dirty && f.src.type === 'drive') autoDrive(f); }); });
+$('#btn-glogout').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST', headers: { 'X-Requested-With': 'mdstudio' } }).catch(() => {});
+  tok = null;
+  dwrap.hidden = true;
+});
 $('#btn-theme').addEventListener('click', () => setTheme(theme === 'dark' ? 'light' : 'dark'));
 $('#btn-lang').addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); applyI18n(); renderAll(); });
 $('#btn-tree').addEventListener('click', () => app.classList.toggle('tree-open'));
@@ -420,6 +611,7 @@ const SAMPLE = [
 
 (async function init() {
   applyI18n();
+  $('#btn-auto').setAttribute('aria-pressed', auto);
   document.documentElement.dataset.theme = theme;
   setMode(['editor', 'split', 'preview'].includes(LS.get('mdstudio-mode', 'split')) ? LS.get('mdstudio-mode', 'split') : 'split');
   let files = [], ui;

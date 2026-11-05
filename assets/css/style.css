@@ -51,6 +51,7 @@ button { font: inherit; color: inherit; }
 .btn { background: transparent; border: 1px solid var(--line); border-radius: var(--radius); padding: .25rem .7rem; font: 13px var(--font-mono); cursor: pointer; transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
 .btn:hover { border-color: var(--link); }
 .btn[aria-pressed="true"] { border-color: var(--link); color: var(--link); }
+.sync { align-self: center; font: 12px var(--font-mono); color: var(--faint); }
 .only-s { display: none; }
 
 .app { flex: 1; min-height: 0; display: grid; grid-template-columns: 240px 1fr; }
@@ -64,6 +65,8 @@ button { font: inherit; color: inherit; }
 .node.on { color: var(--link); background: var(--line-soft); }
 .node.dirty::after { content: " ●"; color: var(--orange); font-size: 10px; }
 .tab.dirty .tab-name::after { content: " ●"; color: var(--orange); font-size: 10px; }
+#dwrap { border-top: 1px solid var(--line); margin-top: .5rem; padding-top: .25rem; }
+.node:disabled { opacity: .5; cursor: default; }
 .empty-tree, .empty { color: var(--faint); padding: .5rem; font-size: 13px; }
 
 .work { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
