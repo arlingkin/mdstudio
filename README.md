@@ -4,7 +4,7 @@
 
 Write Markdown, preview it live, organize local files, and connect Google Drive—all from a browser-based editor with no build step.
 
-> **Project status:** Google Drive integration is implemented. GitHub source integration is planned.
+> **Project status:** Google Drive and GitHub source integrations are implemented.
 
 ## Overview
 
@@ -18,6 +18,7 @@ mdstudio brings the essentials of Markdown writing into one focused workspace:
 - **Front matter** — support for document metadata such as `layout`, `theme`, and `toc`.
 - **Themes & language** — dark/light themes and English/Indonesian interface.
 - **Google Drive** — browse Drive files and save documents to Drive after signing in.
+- **GitHub** — paste a repo, tree or blob link to load files lazily, edit, run `index.html` in a sandboxed preview, and commit and push.
 
 ## Why mdstudio?
 
@@ -64,6 +65,15 @@ https://<your-domain>/api/auth/callback
 
 Also configure the matching redirect URI in Google Cloud Console. The application requests Drive access and stores the refresh token in an encrypted, HTTP-only cookie.
 
+## GitHub source
+
+Paste `user/repo`, `github.com/user/repo`, or a `/tree/<branch>/<path>` or `/blob/<branch>/<path>` link. Shareable route: `?repo=user/repo&ref=branch&path=file`.
+
+→ Files load lazily from raw.githubusercontent.com and are cached in IndexedDB. Binary and large files are not downloaded.
+→ `run` previews the nearest `index.html` in a sandboxed iframe served from `/sandbox/` with its own CSP. No npm or build step.
+→ `commit & push` makes one atomic commit without force. If the remote changed, nothing is overwritten.
+→ The optional fine-grained token (private repos and push) lives only in `sessionStorage` for the tab.
+
 ## Tech stack
 
 | Component | Technology |
@@ -87,7 +97,7 @@ Third-party libraries are vendored in `assets/vendor/`. See `assets/vendor/LICEN
 - [x] IndexedDB autosave
 - [x] Front matter support
 - [x] Google Drive integration
-- [ ] GitHub source integration
+- [x] GitHub source integration
 
 ## Deployment
 

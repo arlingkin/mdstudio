@@ -67,6 +67,15 @@ button { font: inherit; color: inherit; }
 .tab.dirty .tab-name::after { content: " ●"; color: var(--orange); font-size: 10px; }
 #dwrap { border-top: 1px solid var(--line); margin-top: .5rem; padding-top: .25rem; }
 .node:disabled { opacity: .5; cursor: default; }
+#ghwrap { border-top: 1px solid var(--line); margin-top: .5rem; padding-top: .25rem; }
+.gh-row { display: flex; flex-wrap: wrap; gap: .35rem; padding: .25rem .5rem; }
+#ghwrap summary { cursor: pointer; padding: .1rem .5rem; color: var(--muted); font: 13px var(--font-mono); }
+.field { flex: 1; min-width: 0; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: .25rem .5rem; font: 13px var(--font-mono); }
+.node.skip { opacity: .5; }
+#runframe { width: 100%; height: 100%; border: 0; background: Canvas; }
+.app[data-run] .editor { display: none; }
+.app[data-run] .preview { display: block; padding: 0; }
+.app[data-run] .panes { display: flex; }
 .empty-tree, .empty { color: var(--faint); padding: .5rem; font-size: 13px; }
 
 .work { display: flex; flex-direction: column; min-width: 0; min-height: 0; }

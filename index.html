@@ -13,6 +13,7 @@
 <script defer src="assets/vendor/highlight.min.js"></script>
 <script defer src="assets/js/i18n.js"></script>
 <script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/github.js"></script>
 </head>
 <body>
 <header class="bar">
@@ -29,6 +30,7 @@
     <button class="btn" type="button" id="btn-folder" data-i18n="act.folder"></button>
     <button class="btn" type="button" id="btn-drive" data-i18n="act.drive"></button>
     <button class="btn" type="button" id="btn-todrive" data-i18n="act.todrive"></button>
+    <button class="btn" type="button" id="btn-ro" aria-pressed="false" data-i18n="act.ro"></button>
     <span class="sync" id="sync" role="status"></span>
     <button class="btn" type="button" id="btn-auto" aria-pressed="true" data-i18n="act.auto"></button>
     <button class="btn" type="button" id="btn-save" data-i18n="act.save"></button>
@@ -44,6 +46,19 @@
       <div class="side-h"><span data-i18n="act.drive"></span> <button class="btn" type="button" id="btn-glogout" data-i18n="act.logout"></button></div>
       <nav id="dtree" data-i18n-label="act.drive"></nav>
     </div>
+    <div id="ghwrap">
+      <div class="side-h" data-i18n="gh.title"></div>
+      <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go" data-i18n="gh.go"></button></div>
+      <div class="gh-row">
+        <button class="btn" type="button" id="gh-run" data-i18n="gh.run"></button>
+        <button class="btn" type="button" id="gh-commit" data-i18n="gh.commit"></button>
+        <button class="btn" type="button" id="gh-todrive" data-i18n="gh.todrive"></button>
+      </div>
+      <details id="gh-tok"><summary data-i18n="gh.token"></summary>
+        <div class="gh-row"><input class="field" id="gh-tokin" type="password" autocomplete="off" spellcheck="false" data-i18n-label="gh.token"><button class="btn" type="button" id="gh-tokset" data-i18n="gh.tokset"></button></div>
+      </details>
+      <div class="side-h" id="gh-rate"></div>
+    </div>
   </aside>
   <main class="work">
     <div class="tabs" id="tabs" role="tablist"></div>
@@ -57,6 +72,7 @@
       </section>
       <section class="preview pv-dark" id="pv" data-i18n-label="preview.label">
         <article class="md layout-narrow" id="doc"></article>
+        <iframe id="runframe" title="preview" sandbox="allow-scripts allow-forms allow-popups allow-modals" hidden></iframe>
       </section>
     </div>
   </main>

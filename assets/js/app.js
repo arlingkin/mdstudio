@@ -37,6 +37,7 @@ const DB = (() => {
   return {
     all: () => tx('files', 'readonly', s => s.getAll()),
     put: f => tx('files', 'readwrite', s => s.put(f)),
+    putMany: fs => tx('files', 'readwrite', s => { fs.forEach(f => s.put(f)); return {}; }),
     getMeta: k => tx('meta', 'readonly', s => s.get(k)),
     setMeta: (k, v) => tx('meta', 'readwrite', s => s.put(v, k))
   };
@@ -162,7 +163,7 @@ const DriveSource = {
     f.src = { ...f.src, ...stamp(m) };
     return text;
   },
-  async write(path, content, force) {
+  async write(path, content, force, parent) {
     const f = S.files.get(path), id = f.src.id, ct = mimeOf(path) + ';charset=UTF-8';
     if (id && !force) {
       const m = await dmeta(id);
@@ -172,7 +173,7 @@ const DriveSource = {
     if (id) r = await dapi(`${GU}/files/${id}?uploadType=media&fields=${GF}`, { method: 'PATCH', headers: { 'Content-Type': ct }, body: content });
     else {
       const bd = 'mdstudio' + Date.now().toString(36);
-      const meta = JSON.stringify({ name: base(path), mimeType: mimeOf(path) });
+      const meta = JSON.stringify({ name: base(path), mimeType: mimeOf(path), ...(parent && { parents: [parent] }) });
       r = await dapi(`${GU}/files?uploadType=multipart&fields=${GF}`, {
         method: 'POST',
         headers: { 'Content-Type': 'multipart/related; boundary=' + bd },
@@ -332,6 +333,7 @@ function done(f, n, skipped) {
 async function save(f = cur(), toDrive = false) {
   if (!f) return;
   try {
+    if (f.src.type === 'github' && !toDrive) { toast(t('msg.ghsave')); return; }
     if (toDrive || f.src.type === 'drive') {
       saving.add(f.path);
       let g;
@@ -354,12 +356,12 @@ async function save(f = cur(), toDrive = false) {
     toast(t(r === 'file' ? 'msg.saved' : 'msg.downloaded', { n: base(f.path) }));
   } catch (e) { if (e.name !== 'AbortError') toast(errMsg(e)); }
 }
-function newFile() {
+async function newFile() {
   const n = prompt(t('prompt.name'), 'untitled.md');
   if (!n) return;
   const p = n.trim().replace(/\\/g, '/').replace(/^\/+/, '');
   if (!p || /(^|\/)\.\.?(\/|$)/.test(p)) return;
-  openTab(addFile(p, '', { type: 'draft' }, true).path);
+  await openTab(addFile(p, '', { type: 'draft' }, true).path);
   ta.focus();
 }
 
@@ -476,7 +478,7 @@ function renderTree() {
       if (typeof v === 'string') {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'node' + (v === S.active ? ' on' : '') + (S.files.get(v).dirty ? ' dirty' : '');
+        b.className = 'node' + (v === S.active ? ' on' : '') + (S.files.get(v).dirty ? ' dirty' : '') + (S.files.get(v).src.state === 'skipped' ? ' skip' : '');
         b.textContent = k;
         b.title = v;
         b.dataset.path = v;
@@ -497,9 +499,12 @@ function renderTree() {
 }
 function loadEditor() {
   const f = cur();
+  if (window.MD && MD.stopRun) MD.stopRun();
   if (!f) { ta.value = ''; ta.disabled = true; app.dataset.kind = 'none'; doc.replaceChildren(); hlc.textContent = ''; syncState(); return; }
   const md = isMd(f.path);
   ta.disabled = false;
+  ta.readOnly = !!f.ro;
+  $('#btn-ro').setAttribute('aria-pressed', !!f.ro);
   ta.wrap = md ? 'soft' : 'off';
   ta.value = f.content;
   app.dataset.kind = md ? 'md' : 'code';
@@ -507,7 +512,8 @@ function loadEditor() {
   syncState();
 }
 function renderAll() { renderTabs(); renderTree(); loadEditor(); }
-function openTab(p) {
+async function openTab(p) {
+  if (window.MD && MD.beforeOpen && await MD.beforeOpen(p) === false) return;
   if (!S.tabs.includes(p)) S.tabs.push(p);
   S.active = p;
   app.classList.remove('tree-open');
@@ -526,6 +532,7 @@ function closeTab(p) {
 function applyI18n() {
   document.documentElement.lang = lang;
   $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   $$('[data-i18n-label]').forEach(el => { const s = t(el.dataset.i18nLabel); el.setAttribute('aria-label', s); el.title = s; });
   $('#btn-lang').textContent = lang.toUpperCase();
 }
@@ -557,7 +564,7 @@ ta.addEventListener('input', () => {
 });
 ta.addEventListener('scroll', () => { const h = $('#hl'); h.scrollTop = ta.scrollTop; h.scrollLeft = ta.scrollLeft; });
 ta.addEventListener('keydown', e => {
-  if (e.key === 'Tab' && app.dataset.kind === 'code' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+  if (e.key === 'Tab' && app.dataset.kind === 'code' && !ta.readOnly && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
     e.preventDefault();
     ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end');
     ta.dispatchEvent(new Event('input'));
@@ -587,6 +594,14 @@ $('#btn-auto').addEventListener('click', () => {
   if (auto) S.files.forEach(f => { if (f.dirty) sched(f, 0); }); else { timers.forEach(clearTimeout); timers.clear(); }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && auto) S.files.forEach(f => { if (f.dirty && f.src.type === 'drive') autoDrive(f); }); });
+$('#btn-ro').addEventListener('click', () => {
+  const f = cur();
+  if (!f) return;
+  f.ro = !f.ro;
+  ta.readOnly = f.ro;
+  $('#btn-ro').setAttribute('aria-pressed', f.ro);
+  persist(f);
+});
 $('#btn-glogout').addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST', headers: { 'X-Requested-With': 'mdstudio' } }).catch(() => {});
   tok = null;
@@ -609,7 +624,8 @@ const SAMPLE = [
   '| key | values |', '| --- | --- |', '| layout | narrow, wide |', '| toc | true, false |', ''
 ].join('\n');
 
-(async function init() {
+window.MD = { S, t, toast, persist, DB, openTab, renderAll, cur, BIN, MAXB, errMsg, drive: { DriveSource, dapi, driveToken, G, FOLDER } };
+MD.ready = (async function init() {
   applyI18n();
   $('#btn-auto').setAttribute('aria-pressed', auto);
   document.documentElement.dataset.theme = theme;
