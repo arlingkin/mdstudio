@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # 1. Mengamankan dan memperbarui GitHub Actions secara otomatis
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+
+  # 2. Memperbarui dependensi npm / Node.js
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    # Mengelompokkan pembaruan minor dan patch agar tidak membanjiri PR
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
