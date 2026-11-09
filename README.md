@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icons/logo.svg" width="72" alt="mdstudio logo"></p>
+
 # mdstudio
 
 **A lightweight Markdown workspace built with plain HTML, CSS, and vanilla JavaScript.**
@@ -19,6 +21,20 @@ mdstudio brings the essentials of Markdown writing into one focused workspace:
 - **Themes & language** — dark/light themes and English/Indonesian interface.
 - **Google Drive** — browse Drive files and save documents to Drive after signing in.
 - **GitHub** — paste a repo, tree or blob link to load files lazily, edit, run `index.html` in a sandboxed preview, and commit and push.
+
+## How it works
+
+| Step | What you do | Where it goes |
+| --- | --- | --- |
+| **1. Pick a source** | Create or open files, or load a repo/Drive file | <img src="assets/icons/logo.svg" width="18" alt=""> This device (IndexedDB) · <img src="assets/icons/google-drive.svg" width="18" alt=""> Google Drive · <img src="assets/icons/github.svg" width="18" alt=""> GitHub |
+| **2. Write & preview** | Type on the left, read the rendered result on the right | Modes: `editor` · `split` · `preview` |
+| **3. Save & sync** | `Ctrl/Cmd+S`, or let autosave run | Browser · `to drive` · `commit & push` |
+
+Desktop and mobile have separate layouts: sidebar, status bar, draggable divider and focus mode on desktop; bottom bar, file drawer and action sheet on mobile.
+
+Keyboard: `Ctrl/Cmd+K` command palette · `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Ctrl/Cmd+B` / `I` bold / italic · `Ctrl/Cmd+\` sidebar · `Ctrl/Cmd+Shift+F` focus mode · `Esc` closes panels.
+
+Full tutorials for web, desktop and mobile: [`/guide`](https://mdstudios.vercel.app/guide).
 
 ## Why mdstudio?
 
@@ -87,6 +103,8 @@ Paste `user/repo`, `github.com/user/repo`, or a `/tree/<branch>/<path>` or `/blo
 | Deployment | Vercel |
 
 Third-party libraries are vendored in `assets/vendor/`. See `assets/vendor/LICENSES.txt` for their license notices.
+
+Icons live in `assets/icons/` (sprite + standalone logos): [Lucide](https://lucide.dev) (ISC) and [Simple Icons](https://simpleicons.org) (CC0) for the GitHub and Google Drive marks, which remain trademarks of their owners. See `assets/icons/LICENSES.txt`.
 
 ## Roadmap
 

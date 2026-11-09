@@ -610,6 +610,14 @@ $('#btn-glogout').addEventListener('click', async () => {
 $('#btn-theme').addEventListener('click', () => setTheme(theme === 'dark' ? 'light' : 'dark'));
 $('#btn-lang').addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); applyI18n(); renderAll(); });
 $('#btn-tree').addEventListener('click', () => app.classList.toggle('tree-open'));
+new MutationObserver(() => $('#btn-tree').setAttribute('aria-expanded', app.classList.contains('tree-open'))).observe(app, { attributes: true, attributeFilter: ['class'] });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') app.classList.remove('tree-open'); });
+$('.work').addEventListener('click', () => app.classList.remove('tree-open'));
+$('.welcome').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  if (b.dataset.act === 'gh') { app.classList.add('tree-open'); $('#gh-url').focus(); } else $('#btn-' + b.dataset.act).click();
+});
 $('#file-in').addEventListener('change', e => { const l = [...e.target.files]; e.target.value = ''; onPicked(l); });
 if (!window.showDirectoryPicker) $('#btn-folder').hidden = true;
 

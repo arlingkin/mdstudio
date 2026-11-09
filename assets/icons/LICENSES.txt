@@ -1,0 +1,8 @@
+Icons in assets/icons/
+-----------------------
+Lucide (https://lucide.dev) - ISC License, (c) Lucide Icons and Contributors.
+  Used for UI icons in sprite.svg.
+Simple Icons (https://simpleicons.org) - CC0 1.0. GitHub and Google Drive glyphs.
+  The marks themselves remain trademarks of GitHub, Inc. and Google LLC; used only to
+  identify the integrations (see their brand guidelines).
+logo.svg - mdstudio mark, original work, same license as this repository.
