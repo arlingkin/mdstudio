@@ -32,6 +32,8 @@ mdstudio brings the essentials of Markdown writing into one focused workspace:
 
 The toolbar groups actions by scope, each with a mini logo and a thin divider: browser & device, Google Drive (autosave applies here only), GitHub, and view.
 
+The status bar shows words, characters, lines and rendered elements; the info button opens full document and workspace details. Loaded GitHub repositories can be removed from the workspace (trash icon in the sidebar or on any folder); nothing is deleted on GitHub.
+
 Desktop and mobile have separate layouts: sidebar, status bar, draggable divider and focus mode on desktop; bottom bar, file drawer and action sheet on mobile.
 
 Keyboard: `Ctrl/Cmd+K` command palette · `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Ctrl/Cmd+B` / `I` bold / italic · `Ctrl/Cmd+\` sidebar · `Ctrl/Cmd+Shift+F` focus mode · `Esc` closes panels.

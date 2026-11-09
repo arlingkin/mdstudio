@@ -171,7 +171,9 @@ ta.addEventListener('keydown', e => {
 });
 
 /* status bar */
-const sb = $('#sbar'), sbFile = $('#sb-file'), sbWords = $('#sb-words'), sbRead = $('#sb-read'), sbPos = $('#sb-pos'), sbIcon = $('.sb-file use');
+const sb = $('#sbar'), sbFile = $('#sb-file'), sbWords = $('#sb-words'), sbRead = $('#sb-read'), sbPos = $('#sb-pos'), sbIcon = $('.sb-file use'), sbChars = $('#sb-chars'), sbLines = $('#sb-lines'), sbEl = $('#sb-el'), docEl = $('#doc');
+const nf = n => Number(n).toLocaleString();
+const nlines = v => { let n = 1; for (let i = v.indexOf('\n'); i >= 0; i = v.indexOf('\n', i + 1)) n++; return n; };
 let raf = 0;
 function ghActive(f) {
   if (!f) return false;
@@ -191,16 +193,76 @@ function upd() {
     const v = ta.value, w = (v.match(/\S+/g) || []).length, type = f.src && f.src.type;
     sbFile.textContent = f.path + (f.dirty ? ' ●' : '');
     sbIcon.setAttribute('href', '/assets/icons/sprite.svg#' + (type === 'drive' ? 'google-drive' : type === 'github' ? 'github' : 'hard-drive'));
-    sbWords.textContent = t('sb.words', { n: w });
+    sbWords.textContent = t('sb.words', { n: nf(w) });
+    sbChars.textContent = t('sb.chars', { n: nf(v.length) });
+    sbLines.textContent = t('sb.lines', { n: nf(nlines(v)) });
+    const md = app.dataset.kind === 'md';
+    sbEl.hidden = !md;
+    if (md) sbEl.textContent = t('sb.el', { n: nf(docEl.querySelectorAll('*').length) });
     sbRead.textContent = t('sb.read', { n: Math.max(1, Math.ceil(w / 200)) });
-    const s = ta.selectionStart, before = v.slice(0, s);
-    sbPos.textContent = t('sb.pos', { l: before.split('\n').length, c: s - before.lastIndexOf('\n') });
+    const s = ta.selectionStart, e = ta.selectionEnd, before = v.slice(0, s);
+    sbPos.textContent = t('sb.pos', { l: before.split('\n').length, c: s - before.lastIndexOf('\n') }) + (e > s ? ' · ' + t('sb.sel', { n: nf(e - s) }) : '');
+    renderInfo();
   });
 }
 ['input', 'keyup', 'click', 'select', 'focus'].forEach(ev => ta.addEventListener(ev, upd));
 document.addEventListener('selectionchange', () => { if (document.activeElement === ta) upd(); });
-[['#tabs', { childList: true, subtree: true, attributes: true }], ['#doc', { childList: true }], ['#sync', { childList: true }]]
+[['#tree', { childList: true }], ['#tabs', { childList: true, subtree: true, attributes: true }], ['#doc', { childList: true }], ['#sync', { childList: true }]]
   .forEach(([sel, o]) => new MutationObserver(upd).observe($(sel), o));
+
+/* document + workspace details */
+const info = $('#info'), infoBtn = $('#sb-info');
+const bytes = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB';
+function section(title, rows) {
+  const h = document.createElement('h3'), dl = document.createElement('dl');
+  h.textContent = title;
+  rows.forEach(([k, v]) => {
+    const dt = document.createElement('dt'), dd = document.createElement('dd');
+    dt.textContent = t(k); dd.textContent = v;
+    dl.append(dt, dd);
+  });
+  return [h, dl];
+}
+function renderInfo() {
+  if (info.hidden || !window.MD) return;
+  const f = MD.cur(), out = [];
+  if (f) {
+    const v = ta.value;
+    let chars = 0, nospace = 0, letters = 0, digits = 0;
+    for (const ch of v) {
+      chars++;
+      if (/\s/.test(ch)) continue;
+      nospace++;
+      if (/\p{L}/u.test(ch)) letters++; else if (/\p{N}/u.test(ch)) digits++;
+    }
+    const w = (v.match(/\S+/g) || []).length;
+    out.push(...section(t('info.doc'), [['k.words', nf(w)], ['k.chars', nf(chars)], ['k.nospace', nf(nospace)], ['k.letters', nf(letters)], ['k.digits', nf(digits)],
+      ['k.lines', nf(nlines(v))], ['k.paras', nf(v.split(/\n\s*\n/).filter(x => x.trim()).length)], ['k.size', bytes(new Blob([v]).size)], ['k.read', t('k.min', { n: Math.max(1, Math.ceil(w / 200)) })]]));
+    if (app.dataset.kind === 'md') {
+      const q = sel => [...docEl.querySelectorAll(sel)].filter(e => !e.closest('.toc')).length;
+      const boxes = [...docEl.querySelectorAll('input[type=checkbox]')];
+      out.push(...section(t('info.el'), [['k.elements', nf(docEl.querySelectorAll('*').length)], ['k.headings', nf(q('h1,h2,h3,h4,h5,h6'))], ['k.links', nf(q('a[href]'))],
+        ['k.images', nf(q('img'))], ['k.items', nf(q('li'))], ['k.blocks', nf(q('pre'))], ['k.tables', nf(q('table'))], ['k.quotes', nf(q('blockquote'))],
+        ['k.tasks', boxes.filter(b => b.checked).length + ' / ' + boxes.length]]));
+    }
+  }
+  const files = [...MD.S.files.values()], loaded = files.filter(x => x.src && x.src.state !== 'remote' && x.src.state !== 'skipped');
+  const total = loaded.reduce((a, x) => a + (x.content || '').length, 0);
+  const words = total < 3e6 ? nf(loaded.reduce((a, x) => a + ((x.content || '').match(/\S+/g) || []).length, 0)) : '—';
+  const ty = x => x.src && x.src.type;
+  out.push(...section(t('info.ws'), [['k.files', nf(files.length)], ['k.device', nf(files.filter(x => ty(x) !== 'drive' && ty(x) !== 'github').length)],
+    ['k.drive', nf(files.filter(x => ty(x) === 'drive').length)], ['k.gh', nf(files.filter(x => ty(x) === 'github').length)],
+    ['k.wchars', nf(total)], ['k.wwords', words], ['k.unsaved', nf(files.filter(x => x.dirty).length)]]));
+  info.replaceChildren(...out);
+}
+function toggleInfo(on = info.hidden) {
+  info.hidden = !on;
+  infoBtn.setAttribute('aria-expanded', on);
+  renderInfo();
+}
+infoBtn.addEventListener('click', e => { e.stopPropagation(); toggleInfo(); });
+document.addEventListener('click', e => { if (!info.hidden && !e.target.closest('#info')) toggleInfo(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !info.hidden) toggleInfo(false); });
 
 /* command palette */
 const pal = $('#palette'), pin = $('#pal-in'), plist = $('#pal-list');
@@ -224,6 +286,8 @@ function commands() {
     add('git-commit-horizontal', t('gh.commit'), click('gh-commit'), '', gh);
     add('cloud-upload', t('gh.todrive'), click('gh-todrive'), '', gh);
   }
+  add('info', t('p.info'), () => toggleInfo(true));
+  if (f) add('trash-2', t('rm.file'), () => MD.remove([f.path]), '', t('info.ws'));
   if (f) {
     add('save', t('act.save'), () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })), 'Ctrl+S');
     add('lock', t('act.ro'), click('btn-ro'));
