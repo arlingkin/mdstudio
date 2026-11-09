@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>mdstudio</title>
 <meta name="description" content="Markdown interpreter and editor.">
 <link rel="icon" type="image/svg+xml" href="assets/icons/logo.svg">
@@ -14,32 +14,45 @@
 <script defer src="assets/js/i18n.js"></script>
 <script defer src="assets/js/app.js"></script>
 <script defer src="assets/js/github.js"></script>
+<script defer src="assets/js/ui.js"></script>
 </head>
 <body>
 <header class="bar">
   <div class="brand"><svg class="ic logo" aria-hidden="true"><use href="assets/icons/sprite.svg#logo"/></svg><span>mdstudio</span></div>
-  <button class="btn only-s" id="btn-tree" type="button" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#panel-left"/></svg><span data-i18n="tree.title"></span></button>
-  <div class="group" id="modes" role="group" data-i18n-label="mode.label">
+  <button class="btn only-l" type="button" id="btn-side" aria-pressed="true" data-i18n-label="p.side"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#panel-left"/></svg></button>
+  <div class="group seg" id="modes" role="group" data-i18n-label="mode.label">
     <button class="btn" type="button" data-mode="editor"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
     <button class="btn" type="button" data-mode="split"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#columns-2"/></svg><span data-i18n="mode.split"></span></button>
     <button class="btn" type="button" data-mode="preview"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
   </div>
-  <div class="group">
-    <button class="btn" type="button" id="btn-new"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button>
-    <button class="btn" type="button" id="btn-open"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button>
-    <button class="btn" type="button" id="btn-folder"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button>
-    <button class="btn" type="button" id="btn-drive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span></button>
-    <button class="btn" type="button" id="btn-todrive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="act.todrive"></span></button>
-    <button class="btn" type="button" id="btn-ro" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="act.ro"></span></button>
-    <span class="sync" id="sync" role="status"></span>
-    <button class="btn" type="button" id="btn-auto" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#refresh-cw"/></svg><span data-i18n="act.auto"></span></button>
-    <button class="btn" type="button" id="btn-save"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#save"/></svg><span data-i18n="act.save"></span></button>
+  <div class="actions" id="actions">
+    <div class="group">
+      <button class="btn" type="button" id="btn-new"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button>
+      <button class="btn" type="button" id="btn-open"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button>
+      <button class="btn" type="button" id="btn-folder"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button>
+    </div>
+    <span class="sep"></span>
+    <div class="group">
+      <button class="btn" type="button" id="btn-drive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span></button>
+      <button class="btn" type="button" id="btn-todrive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="act.todrive"></span></button>
+    </div>
+    <span class="sep"></span>
+    <div class="group">
+      <button class="btn" type="button" id="btn-ro" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="act.ro"></span></button>
+      <span class="sync" id="sync" role="status"></span>
+      <button class="btn" type="button" id="btn-auto" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#refresh-cw"/></svg><span data-i18n="act.auto"></span></button>
+      <button class="btn" type="button" id="btn-save"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#save"/></svg><span data-i18n="act.save"></span></button>
+    </div>
+  </div>
+  <div class="group g-view">
+    <button class="btn" type="button" id="btn-palette" data-i18n-label="p.title"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#command"/></svg></button>
     <button class="btn" type="button" id="btn-theme"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#sun-moon"/></svg><span data-i18n="act.theme"></span></button>
     <button class="btn" type="button" id="btn-lang" data-i18n-label="act.lang"></button>
   </div>
 </header>
 <div class="app" id="app" data-mode="split" data-kind="none">
-  <aside class="side">
+  <aside class="side" id="side">
+  <div class="side-body">
     <div class="side-h"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></div>
     <nav id="tree" data-i18n-label="tree.title"></nav>
     <div id="dwrap" hidden>
@@ -59,6 +72,12 @@
       </details>
       <div class="side-h" id="gh-rate"></div>
     </div>
+  </div>
+  <footer class="side-foot">
+    <a href="/guide"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#book-open"/></svg><span data-i18n="nav.guide"></span></a>
+    <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a>
+    <a href="/terms"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a>
+  </footer>
   </aside>
   <main class="work">
     <div class="tabs" id="tabs" role="tablist"></div>
@@ -69,6 +88,7 @@
           <h1 id="w-title">mdstudio</h1>
           <p class="tag" data-i18n="w.tag"></p>
           <p class="cta" data-i18n="empty"></p>
+          <a class="btn" href="/guide"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#book-open"/></svg><span data-i18n="w.guide"></span></a>
         </header>
         <h2 data-i18n="w.how"></h2>
         <ol class="steps">
@@ -94,9 +114,19 @@
           <div class="card-a"><button class="btn" type="button" data-act="gh"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#link"/></svg><span data-i18n="w.gh.go"></span></button></div>
         </div>
         </div>
+        <h2 class="only-l" data-i18n="w.keys"></h2>
+        <ul class="kbds only-l">
+          <li><span data-i18n="p.title"></span><span><kbd>Ctrl/⌘</kbd><kbd>K</kbd></span></li>
+          <li><span data-i18n="act.save"></span><span><kbd>Ctrl/⌘</kbd><kbd>S</kbd></span></li>
+          <li><span data-i18n="act.open"></span><span><kbd>Ctrl/⌘</kbd><kbd>O</kbd></span></li>
+          <li><span data-i18n="f.bold"></span><span><kbd>Ctrl/⌘</kbd><kbd>B</kbd></span></li>
+          <li><span data-i18n="p.side"></span><span><kbd>Ctrl/⌘</kbd><kbd>\</kbd></span></li>
+          <li><span data-i18n="p.focus"></span><span><kbd>Ctrl/⌘</kbd><kbd>Shift</kbd><kbd>F</kbd></span></li>
+        </ul>
         <p class="legal-links"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#lock"/></svg><span data-i18n="w.local.d"></span> <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a> <a href="/terms"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a></p>
       </div>
     </section>
+    <div class="fmt" id="fmt" role="toolbar" data-i18n-label="p.fmt"><button type="button" data-fmt="bold" data-i18n-label="f.bold"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#bold"/></svg></button><button type="button" data-fmt="italic" data-i18n-label="f.italic"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#italic"/></svg></button><button type="button" data-fmt="strike" data-i18n-label="f.strike"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#strikethrough"/></svg></button><button type="button" data-fmt="code" data-i18n-label="f.code"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#code"/></svg></button><span class="sep"></span><button type="button" data-fmt="heading" data-i18n-label="f.heading"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#heading"/></svg></button><button type="button" data-fmt="quote" data-i18n-label="f.quote"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#quote"/></svg></button><button type="button" data-fmt="ul" data-i18n-label="f.ul"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list"/></svg></button><button type="button" data-fmt="ol" data-i18n-label="f.ol"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list-ordered"/></svg></button><button type="button" data-fmt="task" data-i18n-label="f.task"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list-checks"/></svg></button><span class="sep"></span><button type="button" data-fmt="link" data-i18n-label="f.link"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#link"/></svg></button><button type="button" data-fmt="table" data-i18n-label="f.table"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#table"/></svg></button><button type="button" data-fmt="block" data-i18n-label="f.block"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-code"/></svg></button><button type="button" data-fmt="hr" data-i18n-label="f.hr"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#minus"/></svg></button></div>
     <div class="panes">
       <section class="editor">
         <div class="codewrap pv-dark" id="wrap">
@@ -104,12 +134,31 @@
           <textarea class="ta" id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" data-i18n-label="editor.label"></textarea>
         </div>
       </section>
+      <div class="gutter" id="gutter" role="separator" aria-orientation="vertical" tabindex="0"></div>
       <section class="preview pv-dark" id="pv" data-i18n-label="preview.label">
         <article class="md layout-narrow" id="doc"></article>
         <iframe id="runframe" title="preview" sandbox="allow-scripts allow-forms allow-popups allow-modals" hidden></iframe>
       </section>
     </div>
   </main>
+</div>
+<footer class="statusbar" id="sbar" hidden>
+  <span class="sb-file"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#hard-drive"/></svg><span id="sb-file"></span></span>
+  <span id="sb-words"></span>
+  <span id="sb-read" class="only-l"></span>
+  <span class="sb-r" id="sb-pos"></span>
+</footer>
+<nav class="tabbar" id="tabbar" aria-label="mdstudio">
+  <button class="btn" type="button" id="btn-tree" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></button>
+  <button class="btn" type="button" data-go="editor" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
+  <button class="btn" type="button" data-go="preview" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
+  <button class="btn" type="button" id="btn-more" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#ellipsis"/></svg><span data-i18n="nav.more"></span></button>
+</nav>
+<div class="palette" id="palette" hidden>
+  <div class="pal-box" role="dialog" aria-modal="true" data-i18n-label="p.title">
+    <input class="field" id="pal-in" type="text" autocomplete="off" spellcheck="false" data-i18n-ph="p.ph" data-i18n-label="p.ph">
+    <ul id="pal-list" role="listbox"></ul>
+  </div>
 </div>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 <input type="file" id="file-in" multiple hidden>

@@ -1,0 +1,306 @@
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const LS = {
+  get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+const app = $('#app'), ta = $('#ta'), pv = $('#pv'), panes = $('.panes'), body = document.body;
+const mq = matchMedia('(max-width: 800px)');
+const t = (k, v) => window.MD ? MD.t(k, v) : k;
+const mdOn = () => app.dataset.kind === 'md' && !ta.readOnly && !ta.disabled;
+
+/* tooltips for labelled buttons */
+function titles() {
+  $$('.bar .btn, .tabbar .btn, .side .btn').forEach(b => {
+    if (b.dataset.i18nLabel) return;
+    const s = $('span[data-i18n]', b);
+    if (s) b.title = s.textContent;
+  });
+}
+
+/* sidebar (desktop) */
+const sideBtn = $('#btn-side');
+function setSide(on) {
+  app.classList.toggle('side-off', !on);
+  sideBtn.setAttribute('aria-pressed', on);
+  LS.set('mdstudio-side', on ? '1' : '0');
+}
+sideBtn.addEventListener('click', () => setSide(app.classList.contains('side-off')));
+setSide(LS.get('mdstudio-side', '1') !== '0');
+
+/* mobile: actions sheet + bottom nav */
+const more = $('#btn-more');
+const sheet = on => { document.body.classList.toggle('sheet', on); more.setAttribute('aria-expanded', on); };
+more.addEventListener('click', e => { e.stopPropagation(); sheet(!body.classList.contains('sheet')); });
+$('#actions').addEventListener('click', e => { if (e.target.closest('.btn')) setTimeout(() => sheet(false), 0); });
+document.addEventListener('click', e => { if (body.classList.contains('sheet') && !e.target.closest('#actions')) sheet(false); });
+app.addEventListener('click', e => { if (e.target === app) app.classList.remove('tree-open'); });
+$$('[data-go]').forEach(b => b.addEventListener('click', () => {
+  app.classList.remove('tree-open');
+  $('#modes [data-mode="' + b.dataset.go + '"]').click();
+}));
+const syncNav = () => $$('[data-go]').forEach(b => b.setAttribute('aria-pressed', app.dataset.mode === b.dataset.go));
+new MutationObserver(syncNav).observe(app, { attributes: true, attributeFilter: ['data-mode'] });
+let desk = null;
+function fixMode() {
+  const saved = LS.get('mdstudio-mode', 'split');
+  if (mq.matches && app.dataset.mode === 'split') {
+    desk = 'split';
+    $('#modes [data-mode="editor"]').click();
+    LS.set('mdstudio-mode', saved);
+  } else if (!mq.matches && desk) {
+    $('#modes [data-mode="' + desk + '"]').click();
+    desk = null;
+  }
+}
+mq.addEventListener('change', fixMode);
+
+/* draggable divider */
+const gut = $('#gutter');
+let ed = parseFloat(LS.get('mdstudio-ed', '50')) || 50;
+const setEd = p => { ed = Math.min(80, Math.max(20, p)); panes.style.setProperty('--ed', ed + '%'); LS.set('mdstudio-ed', String(ed)); };
+setEd(ed);
+gut.addEventListener('pointerdown', e => { gut.setPointerCapture(e.pointerId); gut.classList.add('drag'); panes.classList.add('dragging'); });
+gut.addEventListener('pointermove', e => {
+  if (!gut.classList.contains('drag')) return;
+  const r = panes.getBoundingClientRect();
+  setEd((e.clientX - r.left) / r.width * 100);
+});
+const endDrag = () => { gut.classList.remove('drag'); panes.classList.remove('dragging'); };
+gut.addEventListener('pointerup', endDrag);
+gut.addEventListener('pointercancel', endDrag);
+gut.addEventListener('dblclick', () => setEd(50));
+gut.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') setEd(ed - 2); else if (e.key === 'ArrowRight') setEd(ed + 2); else if (e.key === 'Home') setEd(50);
+});
+ta.addEventListener('scroll', () => {
+  if (app.dataset.mode !== 'split' || app.dataset.kind !== 'md') return;
+  pv.scrollTop = ta.scrollTop / Math.max(1, ta.scrollHeight - ta.clientHeight) * (pv.scrollHeight - pv.clientHeight);
+});
+
+/* formatting */
+function ins(text, a, b) {
+  ta.focus();
+  ta.setSelectionRange(a, b);
+  if (!document.execCommand('insertText', false, text)) {
+    ta.setRangeText(text, a, b, 'end');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+function wrap(l, r, ph) {
+  const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+  if (s !== e && v.slice(s - l.length, s) === l && v.slice(e, e + r.length) === r) {
+    const sel = v.slice(s, e);
+    ins(sel, s - l.length, e + r.length);
+    ta.setSelectionRange(s - l.length, s - l.length + sel.length);
+    return;
+  }
+  const sel = v.slice(s, e) || ph;
+  ins(l + sel + r, s, e);
+  ta.setSelectionRange(s + l.length, s + l.length + sel.length);
+}
+function prefix(make, re) {
+  const v = ta.value, s = ta.selectionStart, e = ta.selectionEnd;
+  const a = v.lastIndexOf('\n', s - 1) + 1;
+  let b = v.indexOf('\n', e);
+  if (b < 0) b = v.length;
+  const lines = v.slice(a, b).split('\n');
+  const all = lines.every(l => re.test(l));
+  const out = lines.map((l, i) => all ? l.replace(re, '') : make(i) + l.replace(re, '')).join('\n');
+  ins(out, a, b);
+  ta.setSelectionRange(a, a + out.length);
+}
+function heading() {
+  const v = ta.value, s = ta.selectionStart, a = v.lastIndexOf('\n', s - 1) + 1;
+  let b = v.indexOf('\n', s);
+  if (b < 0) b = v.length;
+  const line = v.slice(a, b), m = /^(#{1,6}) /.exec(line), n = m ? m[1].length : 1;
+  const out = (n >= 4 ? '' : '#'.repeat(n + 1) + ' ') + line.replace(/^#{1,6} /, '');
+  ins(out, a, b);
+  ta.setSelectionRange(a + out.length, a + out.length);
+}
+function block(text, cursor) {
+  const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+  const nl = s > 0 && v[s - 1] !== '\n' ? '\n' : '';
+  ins(nl + text, s, e);
+  if (cursor != null) ta.setSelectionRange(s + nl.length + cursor[0], s + nl.length + cursor[1]);
+}
+const FMT = {
+  bold: () => wrap('**', '**', 'bold'),
+  italic: () => wrap('*', '*', 'italic'),
+  strike: () => wrap('~~', '~~', 'text'),
+  code: () => wrap('`', '`', 'code'),
+  heading,
+  quote: () => prefix(() => '> ', /^> /),
+  ul: () => prefix(() => '- ', /^[-*+] (?!\[[ xX]\] )/),
+  ol: () => prefix(i => (i + 1) + '. ', /^\d+\. /),
+  task: () => prefix(() => '- [ ] ', /^- \[[ xX]\] /),
+  link: () => {
+    const s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e) || 'text';
+    ins('[' + sel + '](url)', s, e);
+    ta.setSelectionRange(s + sel.length + 3, s + sel.length + 6);
+  },
+  table: () => block('| Column | Column |\n| --- | --- |\n|  |  |\n'),
+  block: () => { const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd); block('```\n' + sel + '\n```\n', [4, 4 + sel.length]); },
+  hr: () => block('\n---\n\n')
+};
+const fmt = $('#fmt');
+fmt.addEventListener('mousedown', e => { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
+fmt.addEventListener('click', e => {
+  const b = e.target.closest('[data-fmt]');
+  if (b && mdOn()) FMT[b.dataset.fmt]();
+});
+ta.addEventListener('keydown', e => {
+  if (!mdOn() || e.isComposing) return;
+  const m = e.ctrlKey || e.metaKey;
+  if (m && !e.altKey && !e.shiftKey) {
+    const k = e.key.toLowerCase();
+    if (k === 'b') { e.preventDefault(); FMT.bold(); } else if (k === 'i') { e.preventDefault(); FMT.italic(); }
+    return;
+  }
+  if (e.key !== 'Enter' || e.shiftKey || m || e.altKey || ta.selectionStart !== ta.selectionEnd) return;
+  const v = ta.value, s = ta.selectionStart, a = v.lastIndexOf('\n', s - 1) + 1;
+  const mm = /^(\s*)([-*+]|\d+\.)( \[[ xX]\])? (.*)$/.exec(v.slice(a, s));
+  if (!mm) return;
+  e.preventDefault();
+  if (mm[4] === '') { ins('', a, s); return; }
+  const mark = /\d/.test(mm[2]) ? (parseInt(mm[2], 10) + 1) + '.' : mm[2];
+  ins('\n' + mm[1] + mark + (mm[3] ? ' [ ]' : '') + ' ', s, s);
+});
+
+/* status bar */
+const sb = $('#sbar'), sbFile = $('#sb-file'), sbWords = $('#sb-words'), sbRead = $('#sb-read'), sbPos = $('#sb-pos'), sbIcon = $('.sb-file use');
+let raf = 0;
+function upd() {
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(() => {
+    const f = window.MD && MD.cur();
+    sb.hidden = !f;
+    if (!f) return;
+    const v = ta.value, w = (v.match(/\S+/g) || []).length, type = f.src && f.src.type;
+    sbFile.textContent = f.path + (f.dirty ? ' ●' : '');
+    sbIcon.setAttribute('href', 'assets/icons/sprite.svg#' + (type === 'drive' ? 'google-drive' : type === 'github' ? 'github' : 'hard-drive'));
+    sbWords.textContent = t('sb.words', { n: w });
+    sbRead.textContent = t('sb.read', { n: Math.max(1, Math.ceil(w / 200)) });
+    const s = ta.selectionStart, before = v.slice(0, s);
+    sbPos.textContent = t('sb.pos', { l: before.split('\n').length, c: s - before.lastIndexOf('\n') });
+  });
+}
+['input', 'keyup', 'click', 'select', 'focus'].forEach(ev => ta.addEventListener(ev, upd));
+document.addEventListener('selectionchange', () => { if (document.activeElement === ta) upd(); });
+[['#tabs', { childList: true, subtree: true, attributes: true }], ['#doc', { childList: true }], ['#sync', { childList: true }]]
+  .forEach(([sel, o]) => new MutationObserver(upd).observe($(sel), o));
+
+/* command palette */
+const pal = $('#palette'), pin = $('#pal-in'), plist = $('#pal-list');
+let items = [], sel = 0, lastFocus = null;
+const click = id => () => $('#' + id).click();
+const showSide = () => { if (app.classList.contains('side-off')) setSide(true); app.classList.add('tree-open'); };
+function commands() {
+  const c = [];
+  const add = (icon, label, run, key) => c.push({ icon, label, run, key });
+  add('file-plus', t('act.new'), click('btn-new'));
+  add('file-text', t('act.open'), click('btn-open'), 'Ctrl+O');
+  if (!$('#btn-folder').hidden) add('folder-open', t('act.folder'), click('btn-folder'));
+  add('google-drive', t('act.drive'), click('btn-drive'));
+  add('cloud-upload', t('act.todrive'), click('btn-todrive'));
+  add('save', t('act.save'), click('btn-save'), 'Ctrl+S');
+  add('refresh-cw', t('act.auto'), click('btn-auto'));
+  add('eye', t('act.ro'), click('btn-ro'));
+  add('pencil', t('mode.editor'), () => $('#modes [data-mode="editor"]').click());
+  if (!mq.matches) add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());
+  add('eye', t('mode.preview'), () => $('#modes [data-mode="preview"]').click());
+  add('sun-moon', t('act.theme'), click('btn-theme'));
+  add('languages', t('act.lang'), click('btn-lang'));
+  add('github', t('gh.go'), () => { showSide(); $('#gh-url').focus(); });
+  if (!mq.matches) {
+    add('panel-left', t('p.side'), () => setSide(app.classList.contains('side-off')), 'Ctrl+\\');
+    add('maximize', t('p.focus'), toggleFocus, 'Ctrl+Shift+F');
+  }
+  add('book-open', t('p.guide'), () => { location.href = '/guide'; });
+  add('shield-check', t('w.privacy'), () => { location.href = '/privacy'; });
+  add('file-text', t('w.terms'), () => { location.href = '/terms'; });
+  if (mdOn() && app.dataset.mode !== 'preview') {
+    [['bold', 'bold', 'Ctrl+B'], ['italic', 'italic', 'Ctrl+I'], ['strike', 'strikethrough'], ['code', 'code'], ['heading', 'heading'], ['quote', 'quote'],
+     ['ul', 'list'], ['ol', 'list-ordered'], ['task', 'list-checks'], ['link', 'link'], ['table', 'table'], ['block', 'file-code'], ['hr', 'minus']]
+      .forEach(([k, icon, key]) => add(icon, t('f.' + k), FMT[k], key));
+  }
+  return c;
+}
+function draw() {
+  plist.replaceChildren();
+  if (!items.length) { const p = document.createElement('li'); p.className = 'pal-none'; p.textContent = t('p.none'); plist.append(p); return; }
+  items.forEach((it, i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button'; b.className = 'pal-item'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', i === sel);
+    b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#' + it.icon + '"/></svg>';
+    const s = document.createElement('span'); s.textContent = it.label; b.append(s);
+    if (it.key) { const k = document.createElement('kbd'); k.textContent = it.key; b.append(k); }
+    b.addEventListener('click', () => run(i));
+    li.append(b); plist.append(li);
+  });
+  const on = $('[aria-selected="true"]', plist);
+  if (on) on.scrollIntoView({ block: 'nearest' });
+}
+function filter() {
+  const q = pin.value.trim().toLowerCase();
+  items = all.filter(i => i.label.toLowerCase().includes(q));
+  sel = 0;
+  draw();
+}
+let all = [];
+function openPal() {
+  if (!window.MD) return;
+  lastFocus = document.activeElement;
+  all = commands();
+  pin.value = '';
+  pal.hidden = false;
+  filter();
+  pin.focus();
+}
+function closePal() {
+  pal.hidden = true;
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+function run(i) {
+  const it = items[i];
+  if (!it) return;
+  closePal();
+  setTimeout(it.run, 0);
+}
+pin.addEventListener('input', filter);
+pin.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(items.length - 1, sel + 1); draw(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); draw(); }
+  else if (e.key === 'Enter') { e.preventDefault(); run(sel); }
+});
+pal.addEventListener('mousedown', e => { if (e.target === pal) closePal(); });
+$('#btn-palette').addEventListener('click', openPal);
+
+/* focus mode (desktop) */
+function toggleFocus() {
+  const on = !body.classList.contains('focus');
+  body.classList.toggle('focus', on);
+  if (on) MD.toast(t('p.focushint'));
+}
+
+/* global shortcuts */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!pal.hidden) { closePal(); return; }
+    body.classList.remove('focus');
+    sheet(false);
+    return;
+  }
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === 'k' && !e.shiftKey) { e.preventDefault(); if (pal.hidden) openPal(); else closePal(); }
+  else if (k === '\\' && !mq.matches) { e.preventDefault(); setSide(app.classList.contains('side-off')); }
+  else if (k === 'f' && e.shiftKey && !mq.matches) { e.preventDefault(); toggleFocus(); }
+});
+
+$('#btn-lang').addEventListener('click', () => setTimeout(() => { titles(); upd(); }, 0));
+(window.MD ? MD.ready : Promise.resolve()).then(() => { titles(); syncNav(); fixMode(); upd(); });
+})();

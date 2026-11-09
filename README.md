@@ -30,7 +30,11 @@ mdstudio brings the essentials of Markdown writing into one focused workspace:
 | **2. Write & preview** | Type on the left, read the rendered result on the right | Modes: `editor` · `split` · `preview` |
 | **3. Save & sync** | `Ctrl/Cmd+S`, or let autosave run | Browser · `to drive` · `commit & push` |
 
-Keyboard: `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Esc` closes the file panel on small screens.
+Desktop and mobile have separate layouts: sidebar, status bar, draggable divider and focus mode on desktop; bottom bar, file drawer and action sheet on mobile.
+
+Keyboard: `Ctrl/Cmd+K` command palette · `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Ctrl/Cmd+B` / `I` bold / italic · `Ctrl/Cmd+\` sidebar · `Ctrl/Cmd+Shift+F` focus mode · `Esc` closes panels.
+
+Full tutorials for web, desktop and mobile: [`/guide`](https://mdstudios.vercel.app/guide).
 
 ## Why mdstudio?
 

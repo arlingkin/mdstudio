@@ -1,0 +1,30 @@
+.guide-in { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
+.g-toc { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: .15rem; font: 13px var(--font-mono); }
+.g-toc a { display: flex; align-items: center; gap: .5rem; padding: .35rem .6rem; border-radius: 8px; color: var(--muted); text-decoration: none; }
+.g-toc a:hover { color: var(--link); background: var(--line-soft); }
+.g-main { min-width: 0; }
+.g-main h1 { margin-top: 0; }
+.plat { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin: 1rem 0 .5rem; }
+.plat .card { text-decoration: none; color: inherit; display: block; }
+.g-sec { scroll-margin-top: 1rem; margin: 1.25rem 0; padding: 1.1rem 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.g-sec h2 { display: flex; align-items: center; gap: .6rem; margin: 0 0 .6rem; }
+.g-sec h3 { font: 600 .95rem var(--font-sans); margin: 1.1rem 0 .3rem; }
+.g-sec code { font: .9em var(--font-mono); background: var(--line-soft); padding: .1em .35em; border-radius: 6px; }
+.g-sec pre { border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem 1rem; overflow: auto; }
+.g-sec pre code { background: none; padding: 0; }
+.g-sec li { margin: .3rem 0; }
+.num { padding-left: 1.4rem; }
+.tip { border-left: 3px solid var(--link); background: var(--line-soft); padding: .5rem .8rem; border-radius: 0 var(--radius) var(--radius) 0; }
+.tw { overflow-x: auto; }
+.g-sec table { border-collapse: collapse; width: 100%; }
+.g-sec td { border: 1px solid var(--line); padding: .4rem .75rem; color: var(--muted); }
+.g-sec td:first-child { white-space: nowrap; }
+.guide .legal-links { margin-top: 2rem; }
+@media (max-width: 800px) {
+  .guide { padding-top: 0; }
+  .guide-in { grid-template-columns: 1fr; gap: 0; }
+  .g-toc { position: sticky; top: 0; z-index: 2; flex-direction: row; overflow-x: auto; background: var(--paper); border-bottom: 1px solid var(--line); padding: .4rem 0; margin: 0 -1rem; padding-inline: 1rem; scrollbar-width: none; }
+  .g-toc a { white-space: nowrap; }
+  .plat { grid-template-columns: 1fr; }
+  .g-sec { padding: .9rem; scroll-margin-top: 3.5rem; }
+}
