@@ -50,6 +50,7 @@ async function ghFetch(f, as) {
   if (!r.ok) { const e = new Error(r.status === 404 ? 'ghnotfound' : 'err'); if (r.status === 404) need(); throw e; }
   return as === 'blob' ? r.blob() : r.text();
 }
+M.ghBlob = f => ghFetch(f, 'blob');
 function syncUrl(f) {
   const g = groups.get(f.src.key);
   if (g) try { history.replaceState(null, '', `?repo=${g.user}/${g.repo}&ref=${encodeURIComponent(g.ref)}&path=${encodeURIComponent(f.src.rpath)}`); } catch {}
@@ -149,6 +150,7 @@ async function commit() {
       tree.push({ path: rp, mode: x.src.mode || '100644', type: 'blob', sha: bl.sha });
       done.push([x, rp, bl.sha]);
     }
+    for (const x of files) { const fr = x.src.from; if (fr && !tree.some(e => e.path === fr)) tree.push({ path: fr, mode: x.src.mode || '100644', type: 'blob', sha: null }); }
     const tr = await gh(`${b}/git/trees`, { method: 'POST', body: JSON.stringify({ base_tree: baseTree, tree }) });
     const cm = await gh(`${b}/git/commits`, { method: 'POST', body: JSON.stringify({ message: msg, tree: tr.sha, parents: [g.head] }) });
     await gh(`${b}/git/refs/${rf}`, { method: 'PATCH', body: JSON.stringify({ sha: cm.sha, force: false }) });

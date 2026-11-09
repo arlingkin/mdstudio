@@ -162,5 +162,19 @@ const T = {
   'k.drive': { en:'Google Drive', id:'Google Drive' },
   'k.gh': { en:'GitHub', id:'GitHub' },
   'k.min': { en:'{n} min', id:'{n} mnt' },
-  'p.info': { en:'Document details', id:'Detail dokumen' }
+  'p.info': { en:'Document details', id:'Detail dokumen' },
+  'sc.file': { en:'File', id:'Berkas' },
+  'sc.file.d': { en:'Rename or copy the current file', id:'Ubah nama atau salin berkas saat ini' },
+  'act.rename': { en:'rename', id:'ubah nama' },
+  'act.copy': { en:'copy', id:'salin' },
+  'rn.prompt': { en:'New name', id:'Nama baru' },
+  'rn.invalid': { en:'Invalid name (no slashes)', id:'Nama tidak valid (tanpa garis miring)' },
+  'rn.exists': { en:'A file with that name already exists', id:'Berkas dengan nama itu sudah ada' },
+  'rn.busy': { en:'Saving in progress, try again', id:'Sedang menyimpan, coba lagi' },
+  'rn.gh': { en:'Open the file first, then rename', id:'Buka berkas dulu, lalu ubah nama' },
+  'rn.done': { en:'Renamed to {n}', id:'Diubah menjadi {n}' },
+  'rn.local': { en:'Renamed as a new draft; the original file on the device is unchanged', id:'Diubah sebagai draf baru; berkas asli di perangkat tidak berubah' },
+  'msg.copied': { en:'Copied {n}', id:'{n} disalin' },
+  'img.missing': { en:'Image not found in workspace', id:'Gambar tidak ada di workspace' },
+  'img.remote': { en:'External image blocked, open link', id:'Gambar eksternal diblokir, buka tautan' }
 };

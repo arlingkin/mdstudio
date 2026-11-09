@@ -306,3 +306,7 @@ body.focus .app { grid-template-columns: 1fr; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+.scope[data-scope="file"] { --scope: var(--lime); }
+.md img { height: auto; }
+.img-miss { display: inline-block; padding: .1rem .45rem; border: 1px dashed var(--line); border-radius: 6px; font: 12px var(--font-mono); color: var(--faint); }
+a.img-miss { color: var(--link); text-decoration: none; }

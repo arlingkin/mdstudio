@@ -288,6 +288,7 @@ function commands() {
   }
   add('info', t('p.info'), () => toggleInfo(true));
   if (f) add('trash-2', t('rm.file'), () => MD.remove([f.path]), '', t('info.ws'));
+  if (f) { add('pencil', t('act.rename'), click('btn-rename'), 'F2', t('sc.file')); add('copy', t('act.copy'), click('btn-copy'), '', t('sc.file')); }
   if (f) {
     add('save', t('act.save'), () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })), 'Ctrl+S');
     add('lock', t('act.ro'), click('btn-ro'));

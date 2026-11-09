@@ -287,6 +287,7 @@ const saving = new Set(), timers = new Map(), paused = new Map();
 let auto = LS.get('mdstudio-auto', '1') === '1';
 function syncState() {
   const f = cur(), el = $('#sync');
+  $('#btn-rename').disabled = $('#btn-copy').disabled = !f;
   if (!f || f.src.type !== 'drive') { el.textContent = ''; return; }
   el.textContent = t('sync.' + (saving.has(f.path) ? 'saving' : paused.get(f.path) || (f.dirty ? 'unsaved' : 'saved')));
 }
@@ -388,6 +389,14 @@ function parseFM(src) {
 
 const SAN = { FORBID_ATTR: ['style'], FORBID_TAGS: ['style'] };
 DOMPurify.addHook('afterSanitizeAttributes', n => {
+  if (n.tagName === 'IMG' || n.tagName === 'SOURCE') n.removeAttribute('srcset');
+  if (n.tagName === 'IMG') {
+    const s = n.getAttribute('src') || '';
+    if (!/^data:image\/(?:png|jpe?g|gif|webp|bmp);base64,/i.test(s)) { if (s) n.setAttribute('data-src', s); n.removeAttribute('src'); }
+    n.setAttribute('loading', 'lazy');
+    n.setAttribute('decoding', 'async');
+    n.setAttribute('referrerpolicy', 'no-referrer');
+  }
   if (n.tagName === 'A') {
     const h = n.getAttribute('href') || '';
     if (h && h[0] !== '#') { n.setAttribute('target', '_blank'); n.setAttribute('rel', 'noopener noreferrer'); }
@@ -404,6 +413,140 @@ marked.use({
   }
 });
 
+const IMGT = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', bmp: 'image/bmp', ico: 'image/x-icon', svg: 'image/svg+xml' };
+const MAXI = 5242880;
+const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
+const joinP = (dir, rel) => { const o = dir.split('/').filter(Boolean); for (const s of rel.split('/')) { if (s === '..') o.pop(); else if (s && s !== '.') o.push(s); } return o.join('/'); };
+const rootOf = p => (/^gh\/[^/]+\/[^/]+@[^/]+/.exec(p) || [p.includes('/') ? p.slice(0, p.indexOf('/')) : ''])[0];
+const imgCache = new Map(), dlist = new Map();
+let imgGen = 0;
+function cached(k, mk) {
+  if (imgCache.has(k)) return imgCache.get(k);
+  const pr = mk().then(b => b && URL.createObjectURL(b)).catch(() => null);
+  imgCache.set(k, pr);
+  pr.then(u => { if (!u && imgCache.get(k) === pr) imgCache.delete(k); });
+  if (imgCache.size > 100) { const [k0, v0] = imgCache.entries().next().value; imgCache.delete(k0); v0.then(u => u && URL.revokeObjectURL(u)); }
+  return pr;
+}
+async function driveImg(dir, p) {
+  if (!dirIds.has(dir)) return null;
+  await driveToken(true);
+  let d = dlist.get(dir);
+  if (!d || Date.now() - d.t > 60000) { d = { t: Date.now(), v: DriveSource.list(dir) }; dlist.set(dir, d); d.v.catch(() => dlist.delete(dir)); }
+  const m = (await d.v).find(x => !x.folder && x.path === p);
+  if (!m || +m.size > MAXI) return null;
+  return cached('d:' + m.id + ':' + m.version, async () => new Blob([await (await dapi(`${G}/files/${m.id}?alt=media`)).blob()], { type: IMGT[ext(p)] }));
+}
+async function workspaceImg(p, from) {
+  const f = S.files.get(p), ty = b => new Blob([b], { type: IMGT[ext(p)] });
+  if (f && f.src.type === 'github') return f.src.size > MAXI ? null : cached('g:' + p + ':' + f.src.sha, async () => ty(await MD.ghBlob(f)));
+  if (f && typeof f.content === 'string' && f.content) return cached('t:' + p + ':' + f.updated, async () => ty(f.content));
+  const h = handles.get(p);
+  if (h) { const file = await h.getFile(); return file.size > MAXI ? null : cached('l:' + p + ':' + file.lastModified + ':' + file.size, async () => ty(file)); }
+  const cf = S.files.get(from);
+  return cf && cf.src.type === 'drive' ? driveImg(dirOf(p), p) : null;
+}
+async function rawImg(u) {
+  const url = new URL(u), e = ext(url.pathname);
+  if (url.protocol !== 'https:' || url.hostname !== 'raw.githubusercontent.com' || !IMGT[e]) return null;
+  return cached('r:' + url.href, async () => {
+    const r = await fetch(url.href, { credentials: 'omit', referrerPolicy: 'no-referrer' });
+    if (!r.ok || +(r.headers.get('content-length') || 0) > MAXI) return null;
+    const b = await r.blob();
+    return b.size > MAXI ? null : new Blob([b], { type: IMGT[e] });
+  });
+}
+async function imgUrl(from, ref) {
+  try {
+    ref = ref.trim();
+    if (/^https:\/\/raw\.githubusercontent\.com\//i.test(ref)) return await rawImg(ref);
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(ref)) return null;
+    const rel = decodeURIComponent(ref.split(/[?#]/)[0]);
+    if (!IMGT[ext(rel)]) return null;
+    const root = rootOf(from), p = rel[0] === '/' ? joinP(root, rel.slice(1)) : joinP(dirOf(from), rel);
+    if (!p || (root && p !== root && !p.startsWith(root + '/'))) return null;
+    return await workspaceImg(p, from);
+  } catch { return null; }
+}
+function imgMiss(im, ref) {
+  const remote = /^(?:https?:)?\/\//i.test(ref), el = document.createElement(remote ? 'a' : 'span');
+  el.className = 'img-miss';
+  el.textContent = im.alt || base(ref.split(/[?#]/)[0]) || 'image';
+  el.title = t(remote ? 'img.remote' : 'img.missing') + ': ' + ref;
+  if (remote) { el.href = ref; el.target = '_blank'; el.rel = 'noopener noreferrer'; }
+  im.replaceWith(el);
+}
+function hydrateImgs(root, from, gen) {
+  $$('img[data-src]', root).forEach(im => {
+    const ref = im.dataset.src;
+    im.onerror = () => imgMiss(im, ref);
+    imgUrl(from, ref).then(u => { if (gen !== imgGen || !im.isConnected) return; if (u) im.src = u; else imgMiss(im, ref); });
+  });
+}
+
+async function clip(s) {
+  try { await navigator.clipboard.writeText(s); return true; } catch {}
+  const x = document.createElement('textarea');
+  x.value = s;
+  x.readOnly = true;
+  x.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.append(x);
+  x.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch {}
+  x.remove();
+  return ok;
+}
+async function copyFile() {
+  const f = cur();
+  if (f) toast(await clip(f.content) ? t('msg.copied', { n: base(f.path) }) : t('msg.err'));
+}
+async function renameFile(p = S.active) {
+  const f = S.files.get(p);
+  if (!f) return;
+  if (saving.has(p)) { toast(t('rn.busy')); return; }
+  const o = base(p), v = prompt(t('rn.prompt'), o), n = v === null ? '' : v.trim();
+  if (!n || n === o) return;
+  if (n.length > 200 || /[\\/\0]/.test(n) || n === '.' || n === '..') { toast(t('rn.invalid')); return; }
+  const np = p.slice(0, p.length - o.length) + n;
+  if (S.files.has(np)) { toast(t('rn.exists')); return; }
+  let note = '';
+  try {
+    if (f.src.type === 'drive' && f.src.id) {
+      const m = await dmeta(f.src.id);
+      if (m.version !== f.src.version || m.modifiedTime !== f.src.modifiedTime) { const e = new Error('conflict'); e.conflict = true; throw e; }
+      const r = await dapi(`${G}/files/${f.src.id}?fields=${GF}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: n }) });
+      f.src = { ...f.src, ...stamp(await r.json()) };
+    } else if (f.src.type === 'github') {
+      if (f.src.state !== 'loaded') { toast(t('rn.gh')); return; }
+      const rp = f.src.rpath, nr = rp.slice(0, rp.length - o.length) + n, from = f.src.from || rp;
+      f.src = { ...f.src, rpath: nr };
+      if (from === nr) delete f.src.from; else { f.src.from = from; f.dirty = true; }
+    } else if (f.src.type === 'local' && handles.has(p)) {
+      handles.delete(p);
+      f.src = { type: 'draft' };
+      f.dirty = true;
+      note = t('rn.local');
+    }
+  } catch (e) { toast(errMsg(e)); return; }
+  const had = timers.has(p);
+  clearTimeout(timers.get(p));
+  timers.delete(p);
+  S.files.delete(p);
+  f.path = np;
+  f.updated = Date.now();
+  S.files.set(np, f);
+  if (paused.has(p)) { paused.set(np, paused.get(p)); paused.delete(p); }
+  S.tabs = S.tabs.map(x => x === p ? np : x);
+  if (S.active === p) S.active = np;
+  DB.delMany([p]).catch(() => {});
+  persist(f);
+  saveUI();
+  if (had || f.dirty) sched(f);
+  renderAll();
+  toast(note || t('rn.done', { n }));
+}
+
 function renderMd(src) {
   const { fm, body } = parseFM(src);
   const th = fm.theme === 'light' || fm.theme === 'dark' ? fm.theme : theme;
@@ -411,6 +554,7 @@ function renderMd(src) {
   pv.className = 'preview pv-' + th;
   doc.className = 'md layout-' + (fm.layout === 'wide' ? 'wide' : 'narrow') + (toc ? ' has-toc' : '');
   doc.innerHTML = DOMPurify.sanitize(marked.parse(body), SAN);
+  hydrateImgs(doc, S.active || '', ++imgGen);
   const used = new Set(), hs = $$('h1,h2,h3,h4', doc);
   hs.forEach(h => {
     const s = 'md-' + (h.textContent.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'h');
@@ -601,6 +745,9 @@ document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 's') { e.preventDefault(); save(); } else if (k === 'o') { e.preventDefault(); openFiles(); }
 });
+document.addEventListener('keydown', e => {
+  if (e.key === 'F2' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); renameFile(); }
+});
 tree.addEventListener('click', e => {
   const r = e.target.closest('.rm');
   if (r) { e.preventDefault(); e.stopPropagation(); removeFiles([...S.files.keys()].filter(p => p.startsWith(r.dataset.prefix + '/'))); return; }
@@ -615,6 +762,8 @@ tabsEl.addEventListener('click', e => {
 });
 $('#modes').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
 $('#btn-new').addEventListener('click', newFile);
+$('#btn-rename').addEventListener('click', () => renameFile());
+$('#btn-copy').addEventListener('click', copyFile);
 $('#btn-open').addEventListener('click', openFiles);
 $('#btn-folder').addEventListener('click', openFolder);
 $('#btn-save').addEventListener('click', () => save(cur(), false, true));
