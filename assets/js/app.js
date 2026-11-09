@@ -330,9 +330,10 @@ function done(f, n, skipped) {
   toast(t('msg.opened', { n }) + (skipped ? t('msg.skipped', { n: skipped }) : ''));
   if (f) openTab(f.path); else renderAll();
 }
-async function save(f = cur(), toDrive = false) {
+async function save(f = cur(), toDrive = false, device = false) {
   if (!f) return;
   try {
+    if (device && (f.src.type === 'drive' || f.src.type === 'github')) { download(f.path, f.content); toast(t('msg.downloaded', { n: base(f.path) })); return; }
     if (f.src.type === 'github' && !toDrive) { toast(t('msg.ghsave')); return; }
     if (toDrive || f.src.type === 'drive') {
       saving.add(f.path);
@@ -584,7 +585,7 @@ $('#modes').addEventListener('click', e => { const b = e.target.closest('button'
 $('#btn-new').addEventListener('click', newFile);
 $('#btn-open').addEventListener('click', openFiles);
 $('#btn-folder').addEventListener('click', openFolder);
-$('#btn-save').addEventListener('click', () => save());
+$('#btn-save').addEventListener('click', () => save(cur(), false, true));
 $('#btn-drive').addEventListener('click', openDrive);
 $('#btn-todrive').addEventListener('click', () => save(cur(), true));
 $('#btn-auto').addEventListener('click', () => {

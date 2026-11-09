@@ -13,7 +13,7 @@ const mdOn = () => app.dataset.kind === 'md' && !ta.readOnly && !ta.disabled;
 
 /* tooltips for labelled buttons */
 function titles() {
-  $$('.bar .btn, .tabbar .btn, .side .btn').forEach(b => {
+  $$('.bar .btn, .tabbar .btn, .side .btn, .tools .btn').forEach(b => {
     if (b.dataset.i18nLabel) return;
     const s = $('span[data-i18n]', b);
     if (s) b.title = s.textContent;
@@ -173,15 +173,24 @@ ta.addEventListener('keydown', e => {
 /* status bar */
 const sb = $('#sbar'), sbFile = $('#sb-file'), sbWords = $('#sb-words'), sbRead = $('#sb-read'), sbPos = $('#sb-pos'), sbIcon = $('.sb-file use');
 let raf = 0;
+function ghActive(f) {
+  if (!f) return false;
+  if (f.src && f.src.type === 'github') return true;
+  const root = f.path.split('/')[0] + '/';
+  return !!(MD.S && MD.S.files) && [...MD.S.files.values()].some(x => x.src && x.src.type === 'github' && x.path.startsWith(root));
+}
 function upd() {
   cancelAnimationFrame(raf);
   raf = requestAnimationFrame(() => {
     const f = window.MD && MD.cur();
+    ['btn-save', 'btn-todrive', 'btn-ro'].forEach(id => { $('#' + id).disabled = !f; });
+    const gh = ghActive(f);
+    ['gh-run', 'gh-commit', 'gh-todrive'].forEach(id => { $('#' + id).disabled = !gh; });
     sb.hidden = !f;
     if (!f) return;
     const v = ta.value, w = (v.match(/\S+/g) || []).length, type = f.src && f.src.type;
     sbFile.textContent = f.path + (f.dirty ? ' ●' : '');
-    sbIcon.setAttribute('href', 'assets/icons/sprite.svg#' + (type === 'drive' ? 'google-drive' : type === 'github' ? 'github' : 'hard-drive'));
+    sbIcon.setAttribute('href', '/assets/icons/sprite.svg#' + (type === 'drive' ? 'google-drive' : type === 'github' ? 'github' : 'hard-drive'));
     sbWords.textContent = t('sb.words', { n: w });
     sbRead.textContent = t('sb.read', { n: Math.max(1, Math.ceil(w / 200)) });
     const s = ta.selectionStart, before = v.slice(0, s);
@@ -199,22 +208,31 @@ let items = [], sel = 0, lastFocus = null;
 const click = id => () => $('#' + id).click();
 const showSide = () => { if (app.classList.contains('side-off')) setSide(true); app.classList.add('tree-open'); };
 function commands() {
-  const c = [];
-  const add = (icon, label, run, key) => c.push({ icon, label, run, key });
-  add('file-plus', t('act.new'), click('btn-new'));
-  add('file-text', t('act.open'), click('btn-open'), 'Ctrl+O');
-  if (!$('#btn-folder').hidden) add('folder-open', t('act.folder'), click('btn-folder'));
-  add('google-drive', t('act.drive'), click('btn-drive'));
-  add('cloud-upload', t('act.todrive'), click('btn-todrive'));
-  add('save', t('act.save'), click('btn-save'), 'Ctrl+S');
-  add('refresh-cw', t('act.auto'), click('btn-auto'));
-  add('eye', t('act.ro'), click('btn-ro'));
+  const c = [], f = MD.cur();
+  const add = (icon, label, run, key, scope) => c.push({ icon, label: scope ? scope + ' · ' + label : label, run, key });
+  const dev = t('sc.device'), drv = 'Drive', gh = 'GitHub';
+  add('file-plus', t('act.new'), click('btn-new'), '', dev);
+  add('file-text', t('act.open'), click('btn-open'), 'Ctrl+O', dev);
+  if (!$('#btn-folder').hidden) add('folder-open', t('act.folder'), click('btn-folder'), '', dev);
+  if (f) add('save', t('act.todevice'), click('btn-save'), '', dev);
+  add('google-drive', t('w.drive.go'), click('btn-drive'), '', drv);
+  if (f) add('cloud-upload', t('act.todrive'), click('btn-todrive'), '', drv);
+  add('refresh-cw', t('act.auto'), click('btn-auto'), '', drv);
+  add('github', t('gh.go'), () => { showSide(); $('#gh-url').focus(); }, '', gh);
+  if (ghActive(f)) {
+    add('play', t('gh.run'), click('gh-run'), '', gh);
+    add('git-commit-horizontal', t('gh.commit'), click('gh-commit'), '', gh);
+    add('cloud-upload', t('gh.todrive'), click('gh-todrive'), '', gh);
+  }
+  if (f) {
+    add('save', t('act.save'), () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })), 'Ctrl+S');
+    add('lock', t('act.ro'), click('btn-ro'));
+  }
   add('pencil', t('mode.editor'), () => $('#modes [data-mode="editor"]').click());
   if (!mq.matches) add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());
   add('eye', t('mode.preview'), () => $('#modes [data-mode="preview"]').click());
   add('sun-moon', t('act.theme'), click('btn-theme'));
   add('languages', t('act.lang'), click('btn-lang'));
-  add('github', t('gh.go'), () => { showSide(); $('#gh-url').focus(); });
   if (!mq.matches) {
     add('panel-left', t('p.side'), () => setSide(app.classList.contains('side-off')), 'Ctrl+\\');
     add('maximize', t('p.focus'), toggleFocus, 'Ctrl+Shift+F');
@@ -235,7 +253,7 @@ function draw() {
   items.forEach((it, i) => {
     const li = document.createElement('li'), b = document.createElement('button');
     b.type = 'button'; b.className = 'pal-item'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', i === sel);
-    b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#' + it.icon + '"/></svg>';
+    b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#' + it.icon + '"/></svg>';
     const s = document.createElement('span'); s.textContent = it.label; b.append(s);
     if (it.key) { const k = document.createElement('kbd'); k.textContent = it.key; b.append(k); }
     b.addEventListener('click', () => run(i));
@@ -301,6 +319,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'f' && e.shiftKey && !mq.matches) { e.preventDefault(); toggleFocus(); }
 });
 
+$('#btn-auto').addEventListener('click', () => MD.toast(t('msg.autonote')));
 $('#btn-lang').addEventListener('click', () => setTimeout(() => { titles(); upd(); }, 0));
 (window.MD ? MD.ready : Promise.resolve()).then(() => { titles(); syncNav(); fixMode(); upd(); });
 })();
