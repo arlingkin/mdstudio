@@ -66,5 +66,22 @@ const T = {
   'act.logout':    { en:'logout',    id:'keluar' },
   'msg.conflict':  { en:'This file changed on Drive since you opened it. OK = overwrite, Cancel = keep Drive version.', id:'Berkas ini berubah di Drive sejak dibuka. OK = timpa, Batal = pertahankan versi Drive.' },
   'msg.conflictno':{ en:'Not saved: Drive version is newer', id:'Tidak disimpan: versi di Drive lebih baru' },
-  'msg.err':       { en:'Action failed', id:'Aksi gagal' }
+  'msg.err':       { en:'Action failed', id:'Aksi gagal' },
+  'w.tag': { en:'Write Markdown, preview it live, sync to Drive or GitHub.', id:'Tulis Markdown, lihat hasilnya langsung, sinkronkan ke Drive atau GitHub.' },
+  'w.how': { en:'How it works', id:'Cara kerja' },
+  'w.s1.t': { en:'Pick a source', id:'Pilih sumber' },
+  'w.s1.d': { en:'Create a file, open local files, or load from Drive or GitHub.', id:'Buat berkas, buka berkas lokal, atau muat dari Drive atau GitHub.' },
+  'w.s2.t': { en:'Write & preview', id:'Tulis & lihat hasil' },
+  'w.s2.d': { en:'Type in the editor and see the result live. Switch editor, split or preview.', id:'Ketik di editor, hasil tampil langsung. Ganti mode editor, split, atau pratinjau.' },
+  'w.s3.t': { en:'Save & sync', id:'Simpan & sinkron' },
+  'w.s3.d': { en:'Autosave keeps drafts in your browser. Send to Drive or commit & push to GitHub.', id:'Autosave menyimpan draf di browser. Kirim ke Drive atau commit & push ke GitHub.' },
+  'w.src': { en:'Sources', id:'Sumber' },
+  'w.local': { en:'This device', id:'Perangkat ini' },
+  'w.local.d': { en:'Files stay in your browser (IndexedDB).', id:'Berkas tetap di browser Anda (IndexedDB).' },
+  'w.drive.d': { en:'Browse Drive, edit, and save back. Needs Google sign-in.', id:'Jelajahi Drive, edit, lalu simpan kembali. Perlu login Google.' },
+  'w.drive.go': { en:'Open Drive', id:'Buka Drive' },
+  'w.gh.d': { en:'Paste a repo or file link. Edit, run index.html, commit & push.', id:'Tempel link repo atau berkas. Edit, jalankan index.html, commit & push.' },
+  'w.gh.go': { en:'Enter link', id:'Isi link' },
+  'w.privacy': { en:'privacy', id:'privasi' },
+  'w.terms': { en:'terms', id:'ketentuan' }
 };
