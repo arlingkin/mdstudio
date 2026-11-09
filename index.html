@@ -3,80 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>mdstudio</title>
-<meta name="description" content="Markdown interpreter and editor.">
-<link rel="icon" type="image/svg+xml" href="assets/icons/logo.svg">
-<link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/hljs.css">
-<script defer src="assets/vendor/marked.umd.js"></script>
-<script defer src="assets/vendor/purify.min.js"></script>
-<script defer src="assets/vendor/highlight.min.js"></script>
-<script defer src="assets/js/i18n.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/github.js"></script>
-<script defer src="assets/js/ui.js"></script>
+<title>mdstudio — Markdown workspace</title>
+<meta name="description" content="Write Markdown with live preview. Keep files on your device, sync with Google Drive, edit and push GitHub repos. No build, no account.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="mdstudio">
+<meta property="og:title" content="mdstudio — Markdown workspace">
+<meta property="og:description" content="Write Markdown with live preview. Keep files on your device, sync with Google Drive, edit and push GitHub repos. No build, no account.">
+<meta property="og:image" content="https://mdstudios.vercel.app/assets/og/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="mdstudio: Markdown workspace with live preview, device files, Google Drive and GitHub">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="mdstudio — Markdown workspace">
+<meta name="twitter:description" content="Write Markdown with live preview. Keep files on your device, sync with Google Drive, edit and push GitHub repos. No build, no account.">
+<meta name="twitter:image" content="https://mdstudios.vercel.app/assets/og/og-image.png">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0a1020">
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/hljs.css">
+<script defer src="/assets/vendor/marked.umd.js"></script>
+<script defer src="/assets/vendor/purify.min.js"></script>
+<script defer src="/assets/vendor/highlight.min.js"></script>
+<script defer src="/assets/js/i18n.js"></script>
+<script defer src="/assets/js/app.js"></script>
+<script defer src="/assets/js/github.js"></script>
+<script defer src="/assets/js/ui.js"></script>
 </head>
 <body>
 <header class="bar">
-  <div class="brand"><svg class="ic logo" aria-hidden="true"><use href="assets/icons/sprite.svg#logo"/></svg><span>mdstudio</span></div>
-  <button class="btn only-l" type="button" id="btn-side" aria-pressed="true" data-i18n-label="p.side"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#panel-left"/></svg></button>
+  <div class="brand"><svg class="ic logo" aria-hidden="true"><use href="/assets/icons/sprite.svg#logo"/></svg><span>mdstudio</span></div>
+  <button class="btn only-l" type="button" id="btn-side" aria-pressed="true" data-i18n-label="p.side"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#panel-left"/></svg></button>
   <div class="group seg" id="modes" role="group" data-i18n-label="mode.label">
-    <button class="btn" type="button" data-mode="editor"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
-    <button class="btn" type="button" data-mode="split"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#columns-2"/></svg><span data-i18n="mode.split"></span></button>
-    <button class="btn" type="button" data-mode="preview"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
-  </div>
-  <div class="actions" id="actions">
-    <div class="group">
-      <button class="btn" type="button" id="btn-new"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button>
-      <button class="btn" type="button" id="btn-open"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button>
-      <button class="btn" type="button" id="btn-folder"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button>
-    </div>
-    <span class="sep"></span>
-    <div class="group">
-      <button class="btn" type="button" id="btn-drive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span></button>
-      <button class="btn" type="button" id="btn-todrive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="act.todrive"></span></button>
-    </div>
-    <span class="sep"></span>
-    <div class="group">
-      <button class="btn" type="button" id="btn-ro" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="act.ro"></span></button>
-      <span class="sync" id="sync" role="status"></span>
-      <button class="btn" type="button" id="btn-auto" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#refresh-cw"/></svg><span data-i18n="act.auto"></span></button>
-      <button class="btn" type="button" id="btn-save"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#save"/></svg><span data-i18n="act.save"></span></button>
-    </div>
+    <button class="btn" type="button" data-mode="editor"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
+    <button class="btn" type="button" data-mode="split"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#columns-2"/></svg><span data-i18n="mode.split"></span></button>
+    <button class="btn" type="button" data-mode="preview"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
   </div>
   <div class="group g-view">
-    <button class="btn" type="button" id="btn-palette" data-i18n-label="p.title"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#command"/></svg></button>
-    <button class="btn" type="button" id="btn-theme"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#sun-moon"/></svg><span data-i18n="act.theme"></span></button>
+    <button class="btn" type="button" id="btn-palette" data-i18n-label="p.title"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#command"/></svg></button>
+    <button class="btn" type="button" id="btn-theme"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#sun-moon"/></svg><span data-i18n="act.theme"></span></button>
     <button class="btn" type="button" id="btn-lang" data-i18n-label="act.lang"></button>
   </div>
 </header>
+<div class="tools" id="actions" role="toolbar" data-i18n-label="tools.label">
+  <div class="scope" data-scope="device" role="group" data-i18n-label="sc.device.d">
+    <span class="scope-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#hard-drive"/></svg><span data-i18n="sc.device"></span></span>
+    <button class="btn" type="button" id="btn-new"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button>
+    <button class="btn" type="button" id="btn-open"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button>
+    <button class="btn" type="button" id="btn-folder"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button>
+    <button class="btn" type="button" id="btn-save"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#save"/></svg><span data-i18n="act.todevice"></span></button>
+  </div>
+  <span class="sep"></span>
+  <div class="scope" data-scope="drive" role="group" data-i18n-label="sc.drive.d">
+    <span class="scope-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#google-drive"/></svg><span>Google Drive</span></span>
+    <button class="btn" type="button" id="btn-drive"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="w.drive.go"></span></button>
+    <button class="btn" type="button" id="btn-todrive"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="act.todrive"></span></button>
+    <button class="btn" type="button" id="btn-auto" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#refresh-cw"/></svg><span data-i18n="act.auto"></span></button>
+    <span class="sync" id="sync" role="status"></span>
+  </div>
+  <span class="sep"></span>
+  <div class="scope" data-scope="github" role="group" data-i18n-label="sc.gh.d">
+    <span class="scope-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span>GitHub</span></span>
+    <button class="btn" type="button" id="gh-run"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#play"/></svg><span data-i18n="gh.run"></span></button>
+    <button class="btn" type="button" id="gh-commit"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#git-commit-horizontal"/></svg><span data-i18n="gh.commit"></span></button>
+    <button class="btn" type="button" id="gh-todrive"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="gh.todrive"></span></button>
+  </div>
+  <span class="sep"></span>
+  <div class="scope" data-scope="view" role="group" data-i18n-label="sc.view.d">
+    <span class="scope-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#lock"/></svg><span data-i18n="sc.view"></span></span>
+    <button class="btn" type="button" id="btn-ro" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#lock"/></svg><span data-i18n="act.ro"></span></button>
+  </div>
+</div>
 <div class="app" id="app" data-mode="split" data-kind="none">
   <aside class="side" id="side">
   <div class="side-body">
-    <div class="side-h"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></div>
+    <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></div>
     <nav id="tree" data-i18n-label="tree.title"></nav>
     <div id="dwrap" hidden>
-      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span> <button class="btn" type="button" id="btn-glogout"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#log-out"/></svg><span data-i18n="act.logout"></span></button></div>
+      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span> <button class="btn" type="button" id="btn-glogout"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#log-out"/></svg><span data-i18n="act.logout"></span></button></div>
       <nav id="dtree" data-i18n-label="act.drive"></nav>
     </div>
     <div id="ghwrap">
-      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span></div>
-      <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#arrow-right"/></svg><span data-i18n="gh.go"></span></button></div>
-      <div class="gh-row">
-        <button class="btn" type="button" id="gh-run"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#play"/></svg><span data-i18n="gh.run"></span></button>
-        <button class="btn" type="button" id="gh-commit"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#git-commit-horizontal"/></svg><span data-i18n="gh.commit"></span></button>
-        <button class="btn" type="button" id="gh-todrive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#cloud-upload"/></svg><span data-i18n="gh.todrive"></span></button>
-      </div>
-      <details id="gh-tok"><summary><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#key-round"/></svg><span data-i18n="gh.token"></span></summary>
+      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span></div>
+      <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#arrow-right"/></svg><span data-i18n="gh.go"></span></button></div>
+      <details id="gh-tok"><summary><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#key-round"/></svg><span data-i18n="gh.token"></span></summary>
         <div class="gh-row"><input class="field" id="gh-tokin" type="password" autocomplete="off" spellcheck="false" data-i18n-label="gh.token"><button class="btn" type="button" id="gh-tokset" data-i18n="gh.tokset"></button></div>
       </details>
       <div class="side-h" id="gh-rate"></div>
     </div>
   </div>
   <footer class="side-foot">
-    <a href="/guide"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#book-open"/></svg><span data-i18n="nav.guide"></span></a>
-    <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a>
-    <a href="/terms"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a>
+    <a href="/guide"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#book-open"/></svg><span data-i18n="nav.guide"></span></a>
+    <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a>
+    <a href="/terms"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a>
   </footer>
   </aside>
   <main class="work">
@@ -84,34 +105,34 @@
     <section class="welcome" aria-labelledby="w-title">
       <div class="welcome-in">
         <header class="hero">
-          <svg class="ic logo ic-xl" aria-hidden="true"><use href="assets/icons/sprite.svg#logo"/></svg>
+          <svg class="ic logo ic-xl" aria-hidden="true"><use href="/assets/icons/sprite.svg#logo"/></svg>
           <h1 id="w-title">mdstudio</h1>
           <p class="tag" data-i18n="w.tag"></p>
           <p class="cta" data-i18n="empty"></p>
-          <a class="btn" href="/guide"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#book-open"/></svg><span data-i18n="w.guide"></span></a>
+          <a class="btn" href="/guide"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#book-open"/></svg><span data-i18n="w.guide"></span></a>
         </header>
         <h2 data-i18n="w.how"></h2>
         <ol class="steps">
-        <li class="step"><span class="step-n">1</span><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#folder-open"/></svg><h3 data-i18n="w.s1.t"></h3><p data-i18n="w.s1.d"></p></li>
-        <li class="step"><span class="step-n">2</span><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#pencil"/></svg><h3 data-i18n="w.s2.t"></h3><p data-i18n="w.s2.d"></p></li>
-        <li class="step"><span class="step-n">3</span><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#save"/></svg><h3 data-i18n="w.s3.t"></h3><p data-i18n="w.s3.d"></p></li>
+        <li class="step"><span class="step-n">1</span><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#folder-open"/></svg><h3 data-i18n="w.s1.t"></h3><p data-i18n="w.s1.d"></p></li>
+        <li class="step"><span class="step-n">2</span><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#pencil"/></svg><h3 data-i18n="w.s2.t"></h3><p data-i18n="w.s2.d"></p></li>
+        <li class="step"><span class="step-n">3</span><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#save"/></svg><h3 data-i18n="w.s3.t"></h3><p data-i18n="w.s3.d"></p></li>
         </ol>
         <h2 data-i18n="w.src"></h2>
         <div class="cards">
         <div class="card">
-          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#hard-drive"/></svg><h3 data-i18n="w.local"></h3></div>
+          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#hard-drive"/></svg><h3 data-i18n="w.local"></h3></div>
           <p data-i18n="w.local.d"></p>
-          <div class="card-a"><button class="btn" type="button" data-act="new"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button><button class="btn" type="button" data-act="open"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button><button class="btn" type="button" data-act="folder"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button></div>
+          <div class="card-a"><button class="btn" type="button" data-act="new"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-plus"/></svg><span data-i18n="act.new"></span></button><button class="btn" type="button" data-act="open"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg><span data-i18n="act.open"></span></button><button class="btn" type="button" data-act="folder"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#folder-open"/></svg><span data-i18n="act.folder"></span></button></div>
         </div>
         <div class="card">
-          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><h3>Google Drive</h3></div>
+          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#google-drive"/></svg><h3>Google Drive</h3></div>
           <p data-i18n="w.drive.d"></p>
-          <div class="card-a"><button class="btn" type="button" data-act="drive"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="w.drive.go"></span></button></div>
+          <div class="card-a"><button class="btn" type="button" data-act="drive"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="w.drive.go"></span></button></div>
         </div>
         <div class="card">
-          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="assets/icons/sprite.svg#github"/></svg><h3>GitHub</h3></div>
+          <div class="card-h"><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><h3>GitHub</h3></div>
           <p data-i18n="w.gh.d"></p>
-          <div class="card-a"><button class="btn" type="button" data-act="gh"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#link"/></svg><span data-i18n="w.gh.go"></span></button></div>
+          <div class="card-a"><button class="btn" type="button" data-act="gh"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg><span data-i18n="w.gh.go"></span></button></div>
         </div>
         </div>
         <h2 class="only-l" data-i18n="w.keys"></h2>
@@ -123,10 +144,10 @@
           <li><span data-i18n="p.side"></span><span><kbd>Ctrl/⌘</kbd><kbd>\</kbd></span></li>
           <li><span data-i18n="p.focus"></span><span><kbd>Ctrl/⌘</kbd><kbd>Shift</kbd><kbd>F</kbd></span></li>
         </ul>
-        <p class="legal-links"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#lock"/></svg><span data-i18n="w.local.d"></span> <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a> <a href="/terms"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a></p>
+        <p class="legal-links"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#lock"/></svg><span data-i18n="w.local.d"></span> <a href="/privacy"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg><span data-i18n="w.privacy"></span></a> <a href="/terms"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg><span data-i18n="w.terms"></span></a></p>
       </div>
     </section>
-    <div class="fmt" id="fmt" role="toolbar" data-i18n-label="p.fmt"><button type="button" data-fmt="bold" data-i18n-label="f.bold"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#bold"/></svg></button><button type="button" data-fmt="italic" data-i18n-label="f.italic"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#italic"/></svg></button><button type="button" data-fmt="strike" data-i18n-label="f.strike"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#strikethrough"/></svg></button><button type="button" data-fmt="code" data-i18n-label="f.code"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#code"/></svg></button><span class="sep"></span><button type="button" data-fmt="heading" data-i18n-label="f.heading"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#heading"/></svg></button><button type="button" data-fmt="quote" data-i18n-label="f.quote"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#quote"/></svg></button><button type="button" data-fmt="ul" data-i18n-label="f.ul"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list"/></svg></button><button type="button" data-fmt="ol" data-i18n-label="f.ol"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list-ordered"/></svg></button><button type="button" data-fmt="task" data-i18n-label="f.task"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#list-checks"/></svg></button><span class="sep"></span><button type="button" data-fmt="link" data-i18n-label="f.link"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#link"/></svg></button><button type="button" data-fmt="table" data-i18n-label="f.table"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#table"/></svg></button><button type="button" data-fmt="block" data-i18n-label="f.block"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#file-code"/></svg></button><button type="button" data-fmt="hr" data-i18n-label="f.hr"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#minus"/></svg></button></div>
+    <div class="fmt" id="fmt" role="toolbar" data-i18n-label="p.fmt"><button type="button" data-fmt="bold" data-i18n-label="f.bold"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#bold"/></svg></button><button type="button" data-fmt="italic" data-i18n-label="f.italic"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#italic"/></svg></button><button type="button" data-fmt="strike" data-i18n-label="f.strike"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#strikethrough"/></svg></button><button type="button" data-fmt="code" data-i18n-label="f.code"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#code"/></svg></button><span class="sep"></span><button type="button" data-fmt="heading" data-i18n-label="f.heading"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#heading"/></svg></button><button type="button" data-fmt="quote" data-i18n-label="f.quote"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#quote"/></svg></button><button type="button" data-fmt="ul" data-i18n-label="f.ul"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#list"/></svg></button><button type="button" data-fmt="ol" data-i18n-label="f.ol"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#list-ordered"/></svg></button><button type="button" data-fmt="task" data-i18n-label="f.task"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#list-checks"/></svg></button><span class="sep"></span><button type="button" data-fmt="link" data-i18n-label="f.link"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg></button><button type="button" data-fmt="table" data-i18n-label="f.table"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#table"/></svg></button><button type="button" data-fmt="block" data-i18n-label="f.block"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-code"/></svg></button><button type="button" data-fmt="hr" data-i18n-label="f.hr"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#minus"/></svg></button></div>
     <div class="panes">
       <section class="editor">
         <div class="codewrap pv-dark" id="wrap">
@@ -143,16 +164,16 @@
   </main>
 </div>
 <footer class="statusbar" id="sbar" hidden>
-  <span class="sb-file"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#hard-drive"/></svg><span id="sb-file"></span></span>
+  <span class="sb-file"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#hard-drive"/></svg><span id="sb-file"></span></span>
   <span id="sb-words"></span>
   <span id="sb-read" class="only-l"></span>
   <span class="sb-r" id="sb-pos"></span>
 </footer>
 <nav class="tabbar" id="tabbar" aria-label="mdstudio">
-  <button class="btn" type="button" id="btn-tree" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></button>
-  <button class="btn" type="button" data-go="editor" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
-  <button class="btn" type="button" data-go="preview" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
-  <button class="btn" type="button" id="btn-more" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="assets/icons/sprite.svg#ellipsis"/></svg><span data-i18n="nav.more"></span></button>
+  <button class="btn" type="button" id="btn-tree" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></button>
+  <button class="btn" type="button" data-go="editor" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
+  <button class="btn" type="button" data-go="preview" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#eye"/></svg><span data-i18n="mode.preview"></span></button>
+  <button class="btn" type="button" id="btn-more" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#ellipsis"/></svg><span data-i18n="nav.more"></span></button>
 </nav>
 <div class="palette" id="palette" hidden>
   <div class="pal-box" role="dialog" aria-modal="true" data-i18n-label="p.title">

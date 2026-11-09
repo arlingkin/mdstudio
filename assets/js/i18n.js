@@ -111,5 +111,14 @@ const T = {
   'f.hr': { en:'Divider', id:'Pemisah' },
   'sb.words': { en:'{n} words', id:'{n} kata' },
   'sb.read': { en:'{n} min read', id:'{n} mnt baca' },
-  'sb.pos': { en:'Ln {l}, Col {c}', id:'Brs {l}, Kol {c}' }
+  'sb.pos': { en:'Ln {l}, Col {c}', id:'Brs {l}, Kol {c}' },
+  'sc.device': { en:'Browser & device', id:'Browser & perangkat' },
+  'sc.device.d': { en:'Pure browser and local files. Nothing is uploaded.', id:'Murni browser dan berkas lokal. Tidak ada yang diunggah.' },
+  'sc.drive.d': { en:'Google Drive. Needs sign-in. Autosave applies here only.', id:'Google Drive. Perlu login. Autosave hanya berlaku di sini.' },
+  'sc.gh.d': { en:'GitHub. Works on files loaded from a repository.', id:'GitHub. Berlaku untuk berkas yang dimuat dari repositori.' },
+  'sc.view': { en:'View', id:'Tampilan' },
+  'sc.view.d': { en:'How the current file is shown', id:'Cara berkas saat ini ditampilkan' },
+  'act.todevice': { en:'save to device', id:'simpan ke perangkat' },
+  'tools.label': { en:'File actions by scope', id:'Aksi berkas per lingkup' },
+  'msg.autonote': { en:'Autosave applies to Google Drive files only', id:'Autosave hanya berlaku untuk berkas Google Drive' }
 };

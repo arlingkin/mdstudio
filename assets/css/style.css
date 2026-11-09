@@ -165,8 +165,19 @@ a.btn { text-decoration: none; color: inherit; }
 kbd { font: 11px var(--font-mono); border: 1px solid var(--line); border-radius: 5px; padding: 0 .35rem; color: var(--faint); background: var(--line-soft); margin-left: .2rem; }
 .bar { flex-wrap: wrap; position: relative; z-index: 3; backdrop-filter: blur(8px); }
 .brand { margin-right: 0; }
-.actions { display: flex; align-items: center; gap: .35rem; margin-left: auto; flex-wrap: wrap; }
-.actions .group { align-items: center; }
+.bar .g-view { margin-left: auto; align-items: center; }
+.tools { display: flex; align-items: center; gap: .25rem; flex: none; padding: .3rem .75rem; border-bottom: 1px solid var(--line); background: var(--paper); overflow-x: auto; scrollbar-width: none; }
+.scope { display: flex; align-items: center; gap: .2rem; flex: none; }
+.scope-h { display: inline-flex; align-items: center; gap: .4rem; margin-right: .2rem; color: var(--scope, var(--faint)); font: 11px var(--font-mono); text-transform: uppercase; letter-spacing: .04em; }
+.scope-h .ic { width: 1rem; height: 1rem; }
+.scope-h span { display: none; }
+.scope[data-scope="device"] { --scope: var(--cyan); }
+.scope[data-scope="drive"] { --scope: var(--blue); }
+.scope[data-scope="github"] { --scope: var(--violet); }
+.scope[data-scope="view"] { --scope: var(--orange); }
+.tools .sep { height: 1.2rem; align-self: center; margin: 0 .45rem; }
+.tools .btn:hover { border-color: var(--scope); }
+.btn:disabled { opacity: .4; pointer-events: none; }
 .sep { width: 1px; align-self: stretch; background: var(--line); margin: .15rem .2rem; flex: none; }
 .seg { gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; flex-wrap: nowrap; }
 .seg .btn { border: 0; border-radius: 0; }
@@ -219,8 +230,8 @@ body.focus .app { grid-template-columns: 1fr; }
   .app[data-mode="split"][data-kind="md"]:not([data-run]) .gutter { display: block; }
   .app[data-mode="split"][data-kind="md"]:not([data-run]) .editor { border-right: 0; }
 }
-@media (min-width: 801px) and (max-width: 1599px) {
-  .bar > .actions .btn span, .bar .g-view .btn span { display: none; }
+@media (min-width: 801px) and (max-width: 1199px) {
+  .tools .btn span, .bar .g-view .btn span { display: none; }
   .bar .btn { padding: .25rem .5rem; }
   .kbds { grid-template-columns: repeat(2, 1fr); }
 }
@@ -250,12 +261,14 @@ body.focus .app { grid-template-columns: 1fr; }
   .tabbar { display: flex; border-top: 1px solid var(--line); background: var(--panel); padding-bottom: env(safe-area-inset-bottom); z-index: 6; }
   .tabbar .btn { flex: 1; flex-direction: column; justify-content: center; gap: .15rem; border: 0; border-radius: 0; font-size: 11px; min-height: var(--nav-h); }
   .tabbar .btn[aria-pressed="true"] { color: var(--link); box-shadow: inset 0 2px 0 var(--link); }
-  .actions { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); z-index: 6; margin: 0; padding: .75rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; background: var(--paper); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: var(--shadow-card); transform: translateY(110%); visibility: hidden; transition: transform var(--dur) var(--ease), visibility var(--dur); }
-  body.sheet .actions { transform: none; visibility: visible; }
-  .actions .group { display: contents; }
-  .actions .sep { display: none; }
-  .actions .btn { flex-direction: column; justify-content: center; padding: .6rem .25rem; font-size: 12px; min-height: 56px; }
-  .actions .sync { grid-column: 1 / -1; text-align: center; order: 9; }
+  .tools { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); z-index: 6; margin: 0; padding: .75rem; flex-direction: column; align-items: stretch; gap: .6rem; max-height: 70dvh; overflow: auto; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: var(--shadow-card); transform: translateY(110%); visibility: hidden; transition: transform var(--dur) var(--ease), visibility var(--dur); }
+  body.sheet .tools { transform: none; visibility: visible; }
+  .scope { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+  .scope-h { grid-column: 1 / -1; margin: 0; padding: .1rem .2rem; border-bottom: 1px solid var(--line-soft); }
+  .scope-h span { display: inline; }
+  .tools .sep { display: none; }
+  .tools .btn { flex-direction: column; justify-content: center; padding: .55rem .25rem; font-size: 12px; min-height: 52px; }
+  .tools .sync { grid-column: 1 / -1; text-align: center; }
   .statusbar { padding: 0 .75rem; gap: .75rem; }
   #sb-pos { display: none; }
   .status { bottom: calc(var(--nav-h) + var(--sb-h) + env(safe-area-inset-bottom) + .5rem); right: .5rem; left: .5rem; max-width: none; }
