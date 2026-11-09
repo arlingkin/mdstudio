@@ -37,6 +37,7 @@ const DB = (() => {
   return {
     all: () => tx('files', 'readonly', s => s.getAll()),
     put: f => tx('files', 'readwrite', s => s.put(f)),
+    delMany: ps => tx('files', 'readwrite', s => { ps.forEach(p => s.delete(p)); return {}; }),
     putMany: fs => tx('files', 'readwrite', s => { fs.forEach(f => s.put(f)); return {}; }),
     getMeta: k => tx('meta', 'readonly', s => s.get(k)),
     setMeta: (k, v) => tx('meta', 'readwrite', s => s.put(v, k))
@@ -464,6 +465,7 @@ function renderTabs() {
     return d;
   }));
 }
+const dirState = new Map();
 function renderTree() {
   const root = {};
   for (const p of [...S.files.keys()].sort()) {
@@ -471,7 +473,7 @@ function renderTree() {
     const parts = p.split('/');
     parts.forEach((s, i) => { n = n[s] ??= i === parts.length - 1 ? p : {}; });
   }
-  const build = node => {
+  const build = (node, pre = '') => {
     const ul = document.createElement('ul');
     const keys = Object.keys(node).sort((a, b) => (typeof node[a] === 'string') - (typeof node[b] === 'string') || a.localeCompare(b));
     for (const k of keys) {
@@ -485,10 +487,18 @@ function renderTree() {
         b.dataset.path = v;
         li.append(b);
       } else {
-        const d = document.createElement('details'), s = document.createElement('summary');
-        d.open = true;
-        s.textContent = k;
-        d.append(s, build(v));
+        const d = document.createElement('details'), s = document.createElement('summary'), np = pre ? pre + '/' + k : k;
+        const lb = document.createElement('span'), rm = document.createElement('button');
+        d.dataset.pre = np;
+        d.open = dirState.has(np) ? dirState.get(np) : np.split('/').length < 4 || (S.active || '').startsWith(np + '/');
+        lb.textContent = k;
+        rm.type = 'button';
+        rm.className = 'rm';
+        rm.dataset.prefix = np;
+        rm.title = rm.ariaLabel = t('rm.title');
+        rm.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg>';
+        s.append(lb, rm);
+        d.append(s, build(v, np));
         li.append(d);
       }
       ul.append(li);
@@ -512,7 +522,7 @@ function loadEditor() {
   render();
   syncState();
 }
-function renderAll() { renderTabs(); renderTree(); loadEditor(); }
+function renderAll() { renderTabs(); renderTree(); loadEditor(); if (window.MD && MD.afterRender) MD.afterRender(); }
 async function openTab(p) {
   if (window.MD && MD.beforeOpen && await MD.beforeOpen(p) === false) return;
   if (!S.tabs.includes(p)) S.tabs.push(p);
@@ -520,6 +530,21 @@ async function openTab(p) {
   app.classList.remove('tree-open');
   saveUI();
   renderAll();
+}
+function removeFiles(paths) {
+  const list = paths.filter(p => S.files.has(p));
+  if (!list.length) return false;
+  const dirty = list.filter(p => S.files.get(p).dirty).length;
+  if (!confirm(t('rm.confirm', { n: list.length }) + (dirty ? '\n' + t('rm.dirty', { n: dirty }) : ''))) return false;
+  list.forEach(p => { clearTimeout(timers.get(p)); timers.delete(p); paused.delete(p); handles.delete(p); S.files.delete(p); });
+  S.tabs = S.tabs.filter(p => S.files.has(p));
+  if (!S.files.has(S.active)) S.active = S.tabs[0] ?? null;
+  DB.delMany(list).catch(() => {});
+  saveUI();
+  if (window.MD && MD.afterRemove) MD.afterRemove(list);
+  renderAll();
+  toast(t('rm.done', { n: list.length }));
+  return true;
 }
 function closeTab(p) {
   const i = S.tabs.indexOf(p);
@@ -576,7 +601,14 @@ document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 's') { e.preventDefault(); save(); } else if (k === 'o') { e.preventDefault(); openFiles(); }
 });
-tree.addEventListener('click', e => { const b = e.target.closest('.node'); if (b) openTab(b.dataset.path); });
+tree.addEventListener('click', e => {
+  const r = e.target.closest('.rm');
+  if (r) { e.preventDefault(); e.stopPropagation(); removeFiles([...S.files.keys()].filter(p => p.startsWith(r.dataset.prefix + '/'))); return; }
+  const sm = e.target.closest('summary');
+  if (sm) { const d = sm.parentNode; setTimeout(() => dirState.set(d.dataset.pre, d.open), 0); return; }
+  const b = e.target.closest('.node');
+  if (b) openTab(b.dataset.path);
+});
 tabsEl.addEventListener('click', e => {
   const x = e.target.closest('[data-close]'), b = e.target.closest('.tab-name');
   if (x) closeTab(x.dataset.close); else if (b) openTab(b.dataset.path);
@@ -633,7 +665,7 @@ const SAMPLE = [
   '| key | values |', '| --- | --- |', '| layout | narrow, wide |', '| toc | true, false |', ''
 ].join('\n');
 
-window.MD = { S, t, toast, persist, DB, openTab, renderAll, cur, BIN, MAXB, errMsg, drive: { DriveSource, dapi, driveToken, G, FOLDER } };
+window.MD = { S, t, toast, persist, DB, openTab, renderAll, cur, remove: removeFiles, BIN, MAXB, errMsg, drive: { DriveSource, dapi, driveToken, G, FOLDER } };
 MD.ready = (async function init() {
   applyI18n();
   $('#btn-auto').setAttribute('aria-pressed', auto);

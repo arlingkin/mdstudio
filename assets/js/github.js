@@ -64,6 +64,31 @@ M.beforeOpen = async p => {
   syncUrl(f);
 };
 
+function renderRepos() {
+  const ul = $('#gh-repos');
+  if (!ul) return;
+  const rows = [...groups.values()].map(g => {
+    const n = [...S.files.keys()].filter(p => p.startsWith(g.key + '/')).length;
+    const li = document.createElement('li'), nm = document.createElement('span'), c = document.createElement('small'), rm = document.createElement('button');
+    nm.className = 'rn'; nm.textContent = `${g.user}/${g.repo}@${g.ref}`; nm.title = nm.textContent;
+    c.textContent = t('gh.files', { n });
+    rm.type = 'button'; rm.className = 'rm'; rm.dataset.key = g.key; rm.title = rm.ariaLabel = t('rm.title');
+    rm.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg>';
+    li.append(nm, c, rm);
+    return n ? li : null;
+  }).filter(Boolean);
+  ul.replaceChildren(...rows);
+}
+$('#gh-repos').addEventListener('click', e => {
+  const r = e.target.closest('.rm');
+  if (r) M.remove([...S.files.keys()].filter(p => p.startsWith(r.dataset.key + '/')));
+});
+M.afterRender = renderRepos;
+M.afterRemove = () => {
+  let ch = false;
+  for (const k of [...groups.keys()]) if (![...S.files.keys()].some(p => p.startsWith(k + '/'))) { groups.delete(k); ch = true; }
+  if (ch) saveGroups();
+};
 async function clone(o) {
   toast(t('gh.loading'));
   const b = `/repos/${o.user}/${o.repo}`;
@@ -260,6 +285,7 @@ $('#gh-tokset').addEventListener('click', () => {
 (async () => {
   try { const m = await DB.getMeta('gh'); if (m) Object.entries(m).forEach(([k, v]) => groups.set(k, v)); } catch {}
   await M.ready;
+  renderRepos();
   const f = M.cur();
   if (f && f.src.type === 'github' && f.src.state === 'remote' && await M.beforeOpen(f.path) !== false) M.renderAll();
   const q = new URLSearchParams(location.search), o = q.get('repo') && parseGh(q.get('repo'));

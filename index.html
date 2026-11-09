@@ -88,6 +88,7 @@
     <div id="ghwrap">
       <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span></div>
       <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#arrow-right"/></svg><span data-i18n="gh.go"></span></button></div>
+      <ul class="repos" id="gh-repos" data-i18n-label="gh.repos"></ul>
       <details id="gh-tok"><summary><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#key-round"/></svg><span data-i18n="gh.token"></span></summary>
         <div class="gh-row"><input class="field" id="gh-tokin" type="password" autocomplete="off" spellcheck="false" data-i18n-label="gh.token"><button class="btn" type="button" id="gh-tokset" data-i18n="gh.tokset"></button></div>
       </details>
@@ -166,9 +167,13 @@
 <footer class="statusbar" id="sbar" hidden>
   <span class="sb-file"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#hard-drive"/></svg><span id="sb-file"></span></span>
   <span id="sb-words"></span>
+  <span id="sb-chars"></span>
+  <span id="sb-lines" class="only-l"></span>
+  <span id="sb-el" class="only-l"></span>
   <span id="sb-read" class="only-l"></span>
-  <span class="sb-r" id="sb-pos"></span>
+  <span class="sb-r"><span id="sb-pos"></span><button class="sb-btn" type="button" id="sb-info" aria-expanded="false" data-i18n-label="info.title"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#info"/></svg></button></span>
 </footer>
+<aside class="info" id="info" role="dialog" aria-live="off" hidden data-i18n-label="info.title"></aside>
 <nav class="tabbar" id="tabbar" aria-label="mdstudio">
   <button class="btn" type="button" id="btn-tree" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span></button>
   <button class="btn" type="button" data-go="editor" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#pencil"/></svg><span data-i18n="mode.editor"></span></button>
