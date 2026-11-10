@@ -110,7 +110,7 @@ Third-party libraries are vendored in `assets/vendor/`. See `assets/vendor/LICEN
 
 Icons live in `assets/icons/` (sprite + standalone logos): [Lucide](https://lucide.dev) (ISC) and [Simple Icons](https://simpleicons.org) (CC0) for the GitHub and Google Drive marks, which remain trademarks of their owners. See `assets/icons/LICENSES.txt`.
 ## **PRIVACY POLICY & TOS**
-| [TOS](https://mdstudios.vercel.app/terms) | [PRIVACY](https://mdstudios.vercel.app/POLICY)
+| [TOS](https://mdstudios.vercel.app/terms) | [PRIVACY](https://mdstudios.vercel.app/privacy)
 | --- | --- |
 ## Roadmap
 
