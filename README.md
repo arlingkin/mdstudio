@@ -134,4 +134,4 @@ Issues, ideas, and improvements are welcome. Before proposing a large change, pl
 
 ## License
 
-Copyright © 2026 arlingkin. Released under the [GNU General Public License v3](LICENSE).
+Copyright © 2026 [arlingkin](https://arlingkin.vercel.app). Released under the [GNU General Public License v3](LICENSE).
