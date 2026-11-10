@@ -120,6 +120,17 @@ button { font: inherit; color: inherit; }
 .md th, .md td { border: 1px solid var(--line); padding: .35em .75em; }
 .md hr { border: 0; border-top: 1px solid var(--line); }
 .md li > input { margin-right: .4em; }
+.md li > input[type=checkbox] { accent-color: var(--lime); }
+.md mark { background: color-mix(in srgb, var(--lime) 40%, transparent); color: var(--ink); padding: .05em .25em; border-radius: 4px; }
+.md-alert { --ac: var(--blue); margin: 1em 0; padding: .1em 1em; border-left: 3px solid var(--ac); border-radius: 0 var(--radius) var(--radius) 0; background: var(--line-soft); }
+.md-alert-t { margin: .6em 0 0; font-weight: 700; color: var(--ac); }
+.md-alert-tip { --ac: var(--cyan); }
+.md-alert-important { --ac: var(--violet); }
+.md-alert-warning { --ac: var(--orange); }
+.md-alert-caution { --ac: var(--orange); border-left-style: double; border-left-width: 5px; }
+.mm { margin: 1em 0; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); overflow: auto; text-align: center; }
+.mm img { max-width: 100%; height: auto; }
+.md pre.mm-err { border-color: var(--orange); }
 .toc { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: .75rem 1rem; margin-bottom: 1.5rem; }
 .toc strong { font: 12px var(--font-mono); color: var(--faint); text-transform: uppercase; }
 .toc ul { list-style: none; margin: .4rem 0 0; padding: 0; }

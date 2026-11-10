@@ -414,11 +414,29 @@ DOMPurify.addHook('afterSanitizeAttributes', n => {
   }
 });
 const hlCode = (code, l) => hljs.getLanguage(l) ? hljs.highlight(code, { language: l, ignoreIllegals: true }).value : esc(code);
+const ALERT = /^<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:<br\s*\/?>)?\s*/i;
+const inl = (name, re, tag, ch) => ({
+  name, level: 'inline',
+  start: s => s.indexOf(ch),
+  tokenizer(src) { const m = re.exec(src); if (m) return { type: name, raw: m[0], tokens: this.lexer.inlineTokens(m[1]) }; },
+  renderer(tk) { return `<${tag}>${this.parser.parseInline(tk.tokens)}</${tag}>`; }
+});
 marked.use({
   gfm: true,
+  extensions: [
+    inl('mark', /^==(?=\S)([^=\n]+?)(?<=\S)==/, 'mark', '=='),
+    inl('sup', /^\^(?=\S)([^^\s]+?)\^/, 'sup', '^')
+  ],
   renderer: {
+    blockquote(q) {
+      const m = ALERT.exec(q);
+      if (!m) return `<blockquote>\n${q}</blockquote>\n`;
+      const k = m[1].toLowerCase();
+      return `<div class="md-alert md-alert-${k}"><p class="md-alert-t">${esc(t('md.' + k))}</p>${q.slice(m[0].length) ? '<p>' + q.slice(m[0].length) : ''}</div>\n`;
+    },
     code(code, info) {
       const l = (info || '').trim().split(/\s+/)[0];
+      if (l.toLowerCase() === 'mermaid') return `<pre class="mm-src"><code>${esc(code)}</code></pre>`;
       return `<pre><code class="hljs${hljs.getLanguage(l) ? ' language-' + esc(l) : ''}">${hlCode(code, l)}</code></pre>`;
     }
   }
@@ -553,6 +571,42 @@ async function renameFile(p = S.active) {
   toast(note || t('rn.done', { n }));
 }
 
+let mmP = null;
+const loadMm = () => mmP || (mmP = new Promise((ok, no) => {
+  const s = document.createElement('script');
+  s.src = '/assets/vendor/mermaid.min.js';
+  s.onload = () => window.mermaid ? ok(window.mermaid) : (mmP = null, no());
+  s.onerror = () => { mmP = null; no(); };
+  document.head.append(s);
+}));
+async function hydrateMermaid(root, th, gen) {
+  const els = $$('pre.mm-src', root);
+  if (!els.length) return;
+  let m;
+  try { m = await loadMm(); } catch { return; }
+  m.initialize({ startOnLoad: false, securityLevel: 'strict', theme: th === 'light' ? 'default' : 'dark', htmlLabels: false, flowchart: { htmlLabels: false }, fontFamily: 'Arial, sans-serif' });
+  for (let i = 0; i < els.length; i++) {
+    const pre = els[i], id = 'mm' + gen + '-' + i;
+    try {
+      const { svg } = await m.render(id, pre.textContent);
+      if (gen !== imgGen || !pre.isConnected) return;
+      const vb = /viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/.exec(svg);
+      const img = new Image();
+      img.alt = 'Mermaid';
+      if (vb) { img.width = Math.ceil(+vb[1]); img.height = Math.ceil(+vb[2]); }
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      const box = document.createElement('div');
+      box.className = 'mm';
+      box.append(img);
+      pre.replaceWith(box);
+    } catch {
+      document.getElementById('d' + id)?.remove();
+      pre.classList.add('mm-err');
+      pre.title = t('md.mmerr');
+    }
+  }
+}
+
 function renderMd(src) {
   const { fm, body } = parseFM(src);
   const th = fm.theme === 'light' || fm.theme === 'dark' ? fm.theme : theme;
@@ -561,6 +615,7 @@ function renderMd(src) {
   doc.className = 'md layout-' + (fm.layout === 'wide' ? 'wide' : 'narrow') + (toc ? ' has-toc' : '');
   doc.innerHTML = DOMPurify.sanitize(marked.parse(body), SAN);
   hydrateImgs(doc, S.active || '', ++imgGen);
+  hydrateMermaid(doc, th, imgGen);
   $$('pre', doc).forEach(pre => {
     const b = document.createElement('button');
     b.type = 'button';

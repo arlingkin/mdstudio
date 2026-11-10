@@ -102,6 +102,7 @@ Paste `user/repo`, `github.com/user/repo`, or a `/tree/<branch>/<path>` or `/blo
 | Markdown parsing | [marked](https://github.com/markedjs/marked) |
 | HTML sanitization | [DOMPurify](https://github.com/cure53/DOMPurify) |
 | Syntax highlighting | [highlight.js](https://github.com/highlightjs/highlight.js) |
+| Diagrams | [Mermaid](https://github.com/mermaid-js/mermaid) |
 | Local persistence | IndexedDB |
 | Drive authentication | Vercel Functions + Google OAuth |
 | Deployment | Vercel |
