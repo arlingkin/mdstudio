@@ -38,7 +38,7 @@ Desktop and mobile have separate layouts: sidebar, status bar, draggable divider
 
 Keyboard: `Ctrl/Cmd+K` command palette · `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Ctrl/Cmd+B` / `I` bold / italic · `Ctrl/Cmd+\` sidebar · `Ctrl/Cmd+Shift+F` focus mode · `Esc` closes panels.
 
-Full tutorials for web, desktop and mobile: [`/guide`](/guide.html).
+Full tutorials for web, desktop and mobile: [`/guide`](https://mdstudios.vercel.app/guide).
 
 ## Why mdstudio?
 
