@@ -287,9 +287,11 @@ const saving = new Set(), timers = new Map(), paused = new Map();
 let auto = LS.get('mdstudio-auto', '1') === '1';
 function syncState() {
   const f = cur(), el = $('#sync');
-  $('#btn-rename').disabled = $('#btn-copy').disabled = !f;
-  if (!f || f.src.type !== 'drive') { el.textContent = ''; return; }
-  el.textContent = t('sync.' + (saving.has(f.path) ? 'saving' : paused.get(f.path) || (f.dirty ? 'unsaved' : 'saved')));
+  $('#btn-rename').disabled = $('#btn-copy').disabled = $('#btn-dup').disabled = !f;
+  if (!f || f.src.type !== 'drive') { el.textContent = ''; delete el.dataset.s; return; }
+  const st = !navigator.onLine ? 'off' : saving.has(f.path) ? 'syncing' : paused.get(f.path) || (auto ? (f.dirty ? 'syncing' : 'synced') : (f.dirty ? 'unsaved' : 'saved'));
+  el.dataset.s = st;
+  el.textContent = t('sync.drive') + ' · ' + t('sync.' + st);
 }
 function sched(f, ms = 2000) {
   clearTimeout(timers.get(f.path));
@@ -298,6 +300,7 @@ function sched(f, ms = 2000) {
 async function autoDrive(f) {
   timers.delete(f.path);
   if (!auto || !f.dirty || f.src.type !== 'drive' || saving.has(f.path) || paused.has(f.path)) return;
+  if (!navigator.onLine) { syncState(); return; }
   saving.add(f.path);
   syncState();
   const c = f.content;
@@ -501,6 +504,12 @@ async function copyFile() {
   const f = cur();
   if (f) toast(await clip(f.content) ? t('msg.copied', { n: base(f.path) }) : t('msg.err'));
 }
+function dupFile() {
+  const f = cur();
+  if (!f) return;
+  const d = addFile(f.path, f.content, { type: 'draft' }, true);
+  if (d) { openTab(d.path); toast(t('dup.done', { n: base(d.path) })); }
+}
 async function renameFile(p = S.active) {
   const f = S.files.get(p);
   if (!f) return;
@@ -555,6 +564,14 @@ function renderMd(src) {
   doc.className = 'md layout-' + (fm.layout === 'wide' ? 'wide' : 'narrow') + (toc ? ' has-toc' : '');
   doc.innerHTML = DOMPurify.sanitize(marked.parse(body), SAN);
   hydrateImgs(doc, S.active || '', ++imgGen);
+  $$('pre', doc).forEach(pre => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cp';
+    b.title = b.ariaLabel = t('act.copy');
+    b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#copy"/></svg>';
+    pre.append(b);
+  });
   const used = new Set(), hs = $$('h1,h2,h3,h4', doc);
   hs.forEach(h => {
     const s = 'md-' + (h.textContent.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'h');
@@ -764,6 +781,13 @@ $('#modes').addEventListener('click', e => { const b = e.target.closest('button'
 $('#btn-new').addEventListener('click', newFile);
 $('#btn-rename').addEventListener('click', () => renameFile());
 $('#btn-copy').addEventListener('click', copyFile);
+$('#btn-dup').addEventListener('click', dupFile);
+doc.addEventListener('click', async e => {
+  const b = e.target.closest('.cp');
+  if (!b) return;
+  const c = b.parentNode.querySelector('code');
+  toast(await clip(c ? c.textContent : '') ? t('copy.code') : t('msg.err'));
+});
 $('#btn-open').addEventListener('click', openFiles);
 $('#btn-folder').addEventListener('click', openFolder);
 $('#btn-save').addEventListener('click', () => save(cur(), false, true));
@@ -775,6 +799,8 @@ $('#btn-auto').addEventListener('click', () => {
   $('#btn-auto').setAttribute('aria-pressed', auto);
   if (auto) S.files.forEach(f => { if (f.dirty) sched(f, 0); }); else { timers.forEach(clearTimeout); timers.clear(); }
 });
+addEventListener('online', () => { if (auto) S.files.forEach(f => { if (f.dirty && f.src.type === 'drive') sched(f, 0); }); syncState(); });
+addEventListener('offline', syncState);
 document.addEventListener('visibilitychange', () => { if (document.hidden && auto) S.files.forEach(f => { if (f.dirty && f.src.type === 'drive') autoDrive(f); }); });
 $('#btn-ro').addEventListener('click', () => {
   const f = cur();

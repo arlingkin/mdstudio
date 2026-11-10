@@ -172,6 +172,7 @@ let lastUrls = [];
 function stopRun() {
   if (!app.dataset.run) return;
   delete app.dataset.run;
+  $('#gh-run').setAttribute('aria-pressed', 'false');
   fr.hidden = true;
   fr.removeAttribute('src');
   doc.hidden = false;
@@ -179,19 +180,24 @@ function stopRun() {
   lastUrls = [];
 }
 M.stopRun = stopRun;
+function findIndex(f) {
+  const root = (/^gh\/[^/]+\/[^/]+@[^/]+/.exec(f.path) || [''])[0];
+  let dir = dirOf(f.path);
+  for (;;) {
+    const p = (dir ? dir + '/' : '') + 'index.html';
+    if (S.files.has(p)) return { root, idx: p };
+    if (!dir || dir === root) return null;
+    dir = dirOf(dir);
+  }
+}
+M.hasIndex = f => !!findIndex(f);
 async function runPreview() {
   if (app.dataset.run) { stopRun(); return; }
   const f = M.cur();
   if (!f) return;
-  const root = (/^gh\/[^/]+\/[^/]+@[^/]+/.exec(f.path) || [''])[0];
-  let dir = dirOf(f.path), idx = '';
-  for (;;) {
-    const p = (dir ? dir + '/' : '') + 'index.html';
-    if (S.files.has(p)) { idx = p; break; }
-    if (!dir || dir === root) break;
-    dir = dirOf(dir);
-  }
-  if (!idx) { toast(t('gh.noindex')); return; }
+  const hit = findIndex(f);
+  if (!hit) { toast(t('gh.noindex')); return; }
+  const { root, idx } = hit;
   if (await M.beforeOpen(idx) === false) return;
   const cache = new Map(), idir = dirOf(idx);
   const load = (p, depth) => {
@@ -232,6 +238,7 @@ async function runPreview() {
   stopRun();
   lastUrls = urls;
   app.dataset.run = '1';
+  $('#gh-run').setAttribute('aria-pressed', 'true');
   doc.hidden = true;
   fr.hidden = false;
   fr.onload = () => fr.contentWindow.postMessage({ html: '<!doctype html>' + d.documentElement.outerHTML }, '*');

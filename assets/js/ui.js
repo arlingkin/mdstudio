@@ -43,19 +43,6 @@ $$('[data-go]').forEach(b => b.addEventListener('click', () => {
 }));
 const syncNav = () => $$('[data-go]').forEach(b => b.setAttribute('aria-pressed', app.dataset.mode === b.dataset.go));
 new MutationObserver(syncNav).observe(app, { attributes: true, attributeFilter: ['data-mode'] });
-let desk = null;
-function fixMode() {
-  const saved = LS.get('mdstudio-mode', 'split');
-  if (mq.matches && app.dataset.mode === 'split') {
-    desk = 'split';
-    $('#modes [data-mode="editor"]').click();
-    LS.set('mdstudio-mode', saved);
-  } else if (!mq.matches && desk) {
-    $('#modes [data-mode="' + desk + '"]').click();
-    desk = null;
-  }
-}
-mq.addEventListener('change', fixMode);
 
 /* draggable divider */
 const gut = $('#gutter');
@@ -187,7 +174,8 @@ function upd() {
     const f = window.MD && MD.cur();
     ['btn-save', 'btn-todrive', 'btn-ro'].forEach(id => { $('#' + id).disabled = !f; });
     const gh = ghActive(f);
-    ['gh-run', 'gh-commit', 'gh-todrive'].forEach(id => { $('#' + id).disabled = !gh; });
+    $('#gh-run').disabled = !(gh && MD.hasIndex && MD.hasIndex(f));
+    ['gh-commit', 'gh-todrive'].forEach(id => { $('#' + id).disabled = !gh; });
     sb.hidden = !f;
     if (!f) return;
     const v = ta.value, w = (v.match(/\S+/g) || []).length, type = f.src && f.src.type;
@@ -288,13 +276,13 @@ function commands() {
   }
   add('info', t('p.info'), () => toggleInfo(true));
   if (f) add('trash-2', t('rm.file'), () => MD.remove([f.path]), '', t('info.ws'));
-  if (f) { add('pencil', t('act.rename'), click('btn-rename'), 'F2', t('sc.file')); add('copy', t('act.copy'), click('btn-copy'), '', t('sc.file')); }
+  if (f) { add('pencil', t('act.rename'), click('btn-rename'), 'F2', t('sc.file')); add('copy', t('act.copy'), click('btn-copy'), '', t('sc.file')); add('copy-plus', t('act.dup'), click('btn-dup'), '', t('sc.file')); }
   if (f) {
     add('save', t('act.save'), () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })), 'Ctrl+S');
     add('lock', t('act.ro'), click('btn-ro'));
   }
   add('pencil', t('mode.editor'), () => $('#modes [data-mode="editor"]').click());
-  if (!mq.matches) add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());
+  add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());
   add('eye', t('mode.preview'), () => $('#modes [data-mode="preview"]').click());
   add('sun-moon', t('act.theme'), click('btn-theme'));
   add('languages', t('act.lang'), click('btn-lang'));
@@ -386,5 +374,5 @@ document.addEventListener('keydown', e => {
 
 $('#btn-auto').addEventListener('click', () => MD.toast(t('msg.autonote')));
 $('#btn-lang').addEventListener('click', () => setTimeout(() => { titles(); upd(); }, 0));
-(window.MD ? MD.ready : Promise.resolve()).then(() => { titles(); syncNav(); fixMode(); upd(); });
+(window.MD ? MD.ready : Promise.resolve()).then(() => { titles(); syncNav(); upd(); });
 })();
