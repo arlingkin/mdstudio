@@ -38,7 +38,7 @@ Desktop and mobile have separate layouts: sidebar, status bar, draggable divider
 
 Keyboard: `Ctrl/Cmd+K` command palette · `Ctrl/Cmd+S` save · `Ctrl/Cmd+O` open · `Ctrl/Cmd+B` / `I` bold / italic · `Ctrl/Cmd+\` sidebar · `Ctrl/Cmd+Shift+F` focus mode · `Esc` closes panels.
 
-Full tutorials for web, desktop and mobile: [`/guide`](/guide).
+Full tutorials for web, desktop and mobile: [`/guide`](/guide.html).
 
 ## Why mdstudio?
 
@@ -49,7 +49,7 @@ Full tutorials for web, desktop and mobile: [`/guide`](/guide).
 
 ## Getting started
 ### Live At
-| **visit 👉** | [mdstudios](/) |
+| **visit 👉** | [mdstudios](https://mdstudios.vercel.app) |
 | --- | --- |
 ### Run locally
 
@@ -109,7 +109,9 @@ Paste `user/repo`, `github.com/user/repo`, or a `/tree/<branch>/<path>` or `/blo
 Third-party libraries are vendored in `assets/vendor/`. See `assets/vendor/LICENSES.txt` for their license notices.
 
 Icons live in `assets/icons/` (sprite + standalone logos): [Lucide](https://lucide.dev) (ISC) and [Simple Icons](https://simpleicons.org) (CC0) for the GitHub and Google Drive marks, which remain trademarks of their owners. See `assets/icons/LICENSES.txt`.
-
+## **PRIVACY POLICY & TOS**
+| [TOS](https://mdstudios.vercel.app/terms) | [PRIVACY](https://mdstudios.vercel.app/POLICY)
+| --- | --- |
 ## Roadmap
 
 - [x] Markdown editor and live preview
@@ -129,9 +131,6 @@ The repository includes a Vercel deployment workflow at `.github/workflows/verce
 
 Issues, ideas, and improvements are welcome. Before proposing a large change, please open an issue to discuss its scope.
 
-## License
-
-See [LICENSE](LICENSE).
 
 ## License
 
