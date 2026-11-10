@@ -176,6 +176,10 @@ const T = {
   'rn.local': { en:'Renamed as a new draft; the original file on the device is unchanged', id:'Diubah sebagai draf baru; berkas asli di perangkat tidak berubah' },
   'msg.copied': { en:'Copied {n}', id:'{n} disalin' },
   'img.missing': { en:'Image not found in workspace', id:'Gambar tidak ada di workspace' },
+  'act.ddel': { en:'trash in Drive', id:'hapus di Drive' },
+  'dd.confirm': { en:'Move "{n}" to the Google Drive trash?\nYou can restore it from Drive.', id:'Pindahkan "{n}" ke sampah Google Drive?\nKamu bisa memulihkannya dari Drive.' },
+  'dd.done': { en:'{n} moved to Drive trash', id:'{n} dipindahkan ke sampah Drive' },
+  'w.sample': { en:'try the sample', id:'coba sampel' },
   'act.dup': { en:'duplicate', id:'duplikat' },
   'dup.done': { en:'Duplicated as {n}', id:'Diduplikat sebagai {n}' },
   'copy.code': { en:'Code copied', id:'Kode disalin' },
@@ -186,5 +190,5 @@ const T = {
   'gh.run.d': { en:'Preview site: opens the nearest index.html with its CSS, JS and images in an isolated sandbox. Press again to close. Needs an index.html.', id:'Pratinjau situs: membuka index.html terdekat beserta CSS, JS, dan gambarnya di sandbox terisolasi. Tekan lagi untuk menutup. Butuh index.html.' },
   'gh.commit.d': { en:'Commit & push edited, new and renamed files to the repository branch. Needs a token.', id:'Commit & push berkas yang diubah, baru, dan diganti nama ke branch repositori. Perlu token.' },
   'gh.todrive.d': { en:'Copy this file, or the whole folder, from GitHub to your Google Drive. The repository is not changed.', id:'Salin berkas ini, atau seluruh folder, dari GitHub ke Google Drive. Repositori tidak berubah.' },
-  'img.remote': { en:'External image blocked, open link', id:'Gambar eksternal diblokir, buka tautan' }
+  'img.remote': { en:'External image failed to load, open link', id:'Gambar eksternal gagal dimuat, buka tautan' },
 };

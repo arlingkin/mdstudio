@@ -132,3 +132,7 @@ Issues, ideas, and improvements are welcome. Before proposing a large change, pl
 ## License
 
 See [LICENSE](LICENSE).
+
+## License
+
+Copyright © 2026 arlingkin. Released under the [GNU General Public License v3](LICENSE).

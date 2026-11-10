@@ -117,7 +117,7 @@ const LocalSource = {
 };
 
 const G = 'https://www.googleapis.com/drive/v3', GU = 'https://www.googleapis.com/upload/drive/v3';
-const GF = 'id,name,modifiedTime,version,mimeType,size';
+const GF = 'id,name,modifiedTime,version,mimeType,size,md5Checksum';
 const FOLDER = 'application/vnd.google-apps.folder';
 let tok = null;
 const dirIds = new Map([['drive', 'root']]);
@@ -139,7 +139,14 @@ async function dapi(url, o = {}, retry = true) {
 }
 const dmeta = async id => (await dapi(`${G}/files/${id}?fields=${GF}`)).json();
 const mimeOf = p => isMd(p) ? 'text/markdown' : 'text/plain';
-const stamp = m => ({ version: m.version, modifiedTime: m.modifiedTime });
+const stamp = m => ({ version: m.version, modifiedTime: m.modifiedTime, md5: m.md5Checksum });
+async function remoteChanged(f, content) {
+  const m = await dmeta(f.src.id);
+  const same = m.md5Checksum && f.src.md5 ? m.md5Checksum === f.src.md5 : m.modifiedTime === f.src.modifiedTime;
+  if (same) return false;
+  const txt = await (await dapi(`${G}/files/${f.src.id}?alt=media`)).text();
+  return txt !== content;
+}
 const DriveSource = {
   async list(path = 'drive') {
     const q = encodeURIComponent(`'${dirIds.get(path) ?? 'root'}' in parents and trashed=false`);
@@ -166,10 +173,7 @@ const DriveSource = {
   },
   async write(path, content, force, parent) {
     const f = S.files.get(path), id = f.src.id, ct = mimeOf(path) + ';charset=UTF-8';
-    if (id && !force) {
-      const m = await dmeta(id);
-      if (m.version !== f.src.version || m.modifiedTime !== f.src.modifiedTime) { const e = new Error('conflict'); e.conflict = true; throw e; }
-    }
+    if (id && !force && await remoteChanged(f, content)) { const e = new Error('conflict'); e.conflict = true; throw e; }
     let r;
     if (id) r = await dapi(`${GU}/files/${id}?uploadType=media&fields=${GF}`, { method: 'PATCH', headers: { 'Content-Type': ct }, body: content });
     else {
@@ -288,6 +292,7 @@ let auto = LS.get('mdstudio-auto', '1') === '1';
 function syncState() {
   const f = cur(), el = $('#sync');
   $('#btn-rename').disabled = $('#btn-copy').disabled = $('#btn-dup').disabled = !f;
+  $('#btn-ddel').disabled = !(f && f.src.type === 'drive' && f.src.id);
   if (!f || f.src.type !== 'drive') { el.textContent = ''; delete el.dataset.s; return; }
   const st = !navigator.onLine ? 'off' : saving.has(f.path) ? 'syncing' : paused.get(f.path) || (auto ? (f.dirty ? 'syncing' : 'synced') : (f.dirty ? 'unsaved' : 'saved'));
   el.dataset.s = st;
@@ -394,8 +399,11 @@ const SAN = { FORBID_ATTR: ['style'], FORBID_TAGS: ['style'] };
 DOMPurify.addHook('afterSanitizeAttributes', n => {
   if (n.tagName === 'IMG' || n.tagName === 'SOURCE') n.removeAttribute('srcset');
   if (n.tagName === 'IMG') {
-    const s = n.getAttribute('src') || '';
-    if (!/^data:image\/(?:png|jpe?g|gif|webp|bmp);base64,/i.test(s)) { if (s) n.setAttribute('data-src', s); n.removeAttribute('src'); }
+    let s = (n.getAttribute('src') || '').trim();
+    if (/^\/\//.test(s)) s = 'https:' + s;
+    else if (/^http:\/\//i.test(s)) s = 'https://' + s.slice(7);
+    if (/^https:\/\/(?![^/]*@)\S+$/i.test(s)) n.setAttribute('src', s);
+    else if (!/^data:image\/(?:png|jpe?g|gif|webp|bmp);base64,/i.test(s)) { if (s) n.setAttribute('data-src', s); n.removeAttribute('src'); }
     n.setAttribute('loading', 'lazy');
     n.setAttribute('decoding', 'async');
     n.setAttribute('referrerpolicy', 'no-referrer');
@@ -449,20 +457,9 @@ async function workspaceImg(p, from) {
   const cf = S.files.get(from);
   return cf && cf.src.type === 'drive' ? driveImg(dirOf(p), p) : null;
 }
-async function rawImg(u) {
-  const url = new URL(u), e = ext(url.pathname);
-  if (url.protocol !== 'https:' || url.hostname !== 'raw.githubusercontent.com' || !IMGT[e]) return null;
-  return cached('r:' + url.href, async () => {
-    const r = await fetch(url.href, { credentials: 'omit', referrerPolicy: 'no-referrer' });
-    if (!r.ok || +(r.headers.get('content-length') || 0) > MAXI) return null;
-    const b = await r.blob();
-    return b.size > MAXI ? null : new Blob([b], { type: IMGT[e] });
-  });
-}
 async function imgUrl(from, ref) {
   try {
     ref = ref.trim();
-    if (/^https:\/\/raw\.githubusercontent\.com\//i.test(ref)) return await rawImg(ref);
     if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(ref)) return null;
     const rel = decodeURIComponent(ref.split(/[?#]/)[0]);
     if (!IMGT[ext(rel)]) return null;
@@ -480,6 +477,7 @@ function imgMiss(im, ref) {
   im.replaceWith(el);
 }
 function hydrateImgs(root, from, gen) {
+  $$('img[src^="https:"]', root).forEach(im => { im.onerror = () => imgMiss(im, im.getAttribute('src')); });
   $$('img[data-src]', root).forEach(im => {
     const ref = im.dataset.src;
     im.onerror = () => imgMiss(im, ref);
@@ -522,8 +520,7 @@ async function renameFile(p = S.active) {
   let note = '';
   try {
     if (f.src.type === 'drive' && f.src.id) {
-      const m = await dmeta(f.src.id);
-      if (m.version !== f.src.version || m.modifiedTime !== f.src.modifiedTime) { const e = new Error('conflict'); e.conflict = true; throw e; }
+      if (await remoteChanged(f, f.content)) { const e = new Error('conflict'); e.conflict = true; throw e; }
       const r = await dapi(`${G}/files/${f.src.id}?fields=${GF}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: n }) });
       f.src = { ...f.src, ...stamp(await r.json()) };
     } else if (f.src.type === 'github') {
@@ -692,11 +689,25 @@ async function openTab(p) {
   saveUI();
   renderAll();
 }
-function removeFiles(paths) {
+async function deleteDrive(p = S.active) {
+  const f = S.files.get(p);
+  if (!f || f.src.type !== 'drive' || !f.src.id) return;
+  if (saving.has(p)) { toast(t('rn.busy')); return; }
+  if (!confirm(t('dd.confirm', { n: base(p) }))) return;
+  try {
+    await driveToken(true);
+    await dapi(`${G}/files/${f.src.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true }) });
+  } catch (e) { toast(errMsg(e)); return; }
+  dlist.clear();
+  removeFiles([p], true);
+  if (!dwrap.hidden) { const ul = document.createElement('ul'); dtree.replaceChildren(ul); renderDir('drive', ul).catch(() => {}); }
+  toast(t('dd.done', { n: base(p) }));
+}
+function removeFiles(paths, yes) {
   const list = paths.filter(p => S.files.has(p));
   if (!list.length) return false;
   const dirty = list.filter(p => S.files.get(p).dirty).length;
-  if (!confirm(t('rm.confirm', { n: list.length }) + (dirty ? '\n' + t('rm.dirty', { n: dirty }) : ''))) return false;
+  if (!yes && !confirm(t('rm.confirm', { n: list.length }) + (dirty ? '\n' + t('rm.dirty', { n: dirty }) : ''))) return false;
   list.forEach(p => { clearTimeout(timers.get(p)); timers.delete(p); paused.delete(p); handles.delete(p); S.files.delete(p); });
   S.tabs = S.tabs.filter(p => S.files.has(p));
   if (!S.files.has(S.active)) S.active = S.tabs[0] ?? null;
@@ -782,6 +793,7 @@ $('#btn-new').addEventListener('click', newFile);
 $('#btn-rename').addEventListener('click', () => renameFile());
 $('#btn-copy').addEventListener('click', copyFile);
 $('#btn-dup').addEventListener('click', dupFile);
+$('#btn-ddel').addEventListener('click', () => deleteDrive());
 doc.addEventListener('click', async e => {
   const b = e.target.closest('.cp');
   if (!b) return;
@@ -824,7 +836,8 @@ $('.work').addEventListener('click', () => app.classList.remove('tree-open'));
 $('.welcome').addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
-  if (b.dataset.act === 'gh') { app.classList.add('tree-open'); $('#gh-url').focus(); } else $('#btn-' + b.dataset.act).click();
+  if (b.dataset.act === 'sample') openTab((S.files.get('welcome.md') || addFile('welcome.md', SAMPLE, { type: 'draft' }, true)).path);
+  else if (b.dataset.act === 'gh') { app.classList.add('tree-open'); $('#gh-url').focus(); } else $('#btn-' + b.dataset.act).click();
 });
 $('#file-in').addEventListener('change', e => { const l = [...e.target.files]; e.target.value = ''; onPicked(l); });
 if (!window.showDirectoryPicker) $('#btn-folder').hidden = true;
@@ -850,9 +863,8 @@ MD.ready = (async function init() {
   try { files = await DB.all(); ui = await DB.getMeta('ui'); } catch {}
   files.forEach(f => { S.files.set(f.path, f); if (f.src && f.src.handle) handles.set(f.path, f.src.handle); });
   if (!S.files.size) {
-    const f = addFile('welcome.md', SAMPLE, { type: 'draft' }, true);
-    S.tabs = [f.path];
-    S.active = f.path;
+    S.tabs = [];
+    S.active = null;
   } else {
     S.tabs = ((ui && ui.tabs) || []).filter(p => S.files.has(p));
     S.active = ui && S.files.has(ui.active) ? ui.active : S.tabs[0] ?? null;

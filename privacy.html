@@ -30,23 +30,24 @@
 <header class="bar">
   <a class="brand" href="/"><svg class="ic logo" aria-hidden="true"><use href="/assets/icons/sprite.svg#logo"/></svg><span>mdstudio</span></a>
   <div class="group">
-    <a class="btn" href="/guide">guide</a>
-    <a class="btn" href="/privacy">privacy</a>
-    <a class="btn" href="/terms">terms</a>
+    <a class="btn" href="/guide"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#book-open"/></svg><span>guide</span></a>
+    <a class="btn" aria-current="page" href="/privacy"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg><span>privacy</span></a>
+    <a class="btn" href="/terms"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg><span>terms</span></a>
     <button class="btn" type="button" id="btn-theme"></button>
     <button class="btn" type="button" id="btn-lang"></button>
   </div>
 </header>
 <main class="legal"><div class="legal-in">
 <div data-l="en">
-<h1>Privacy Policy</h1>
-<p class="meta"><a href="/">mdstudio</a> · Effective 2026-11-08</p>
+<h1><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg>Privacy Policy</h1>
+<p class="meta"><a href="/">mdstudio</a> · Effective 2026-11-10</p>
 <p>mdstudio is a personal, static Markdown editor and previewer. It can open files from your device, Google Drive, and public GitHub repositories. This page explains what data the app touches and what it does with it.</p>
 <h2>Google user data</h2>
 <ul>
 <li>Scope requested: <code>https://www.googleapis.com/auth/drive</code>, used only to list, open, create, and update files and folders you choose in your own Google Drive.</li>
 <li>File contents are fetched directly between your browser and Google APIs. They are not sent to or stored on our server.</li>
 <li>The Google login runs through serverless functions that exchange the OAuth code for tokens. The refresh token is encrypted (AES-256-GCM) and stored only in an httpOnly cookie in your browser. Short-lived access tokens are kept in browser memory only.</li>
+<li>Deleting a file from the app moves it to your Google Drive trash; it is not permanently deleted.</li>
 <li>We do not use Google user data for advertising, analytics, profiling, or sale, and we do not share it with third parties.</li>
 <li>mdstudio's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</li>
 </ul>
@@ -59,6 +60,8 @@
 </ul>
 <h2>GitHub</h2>
 <p>Repositories are read from api.github.com and raw.githubusercontent.com directly by your browser. If you commit, requests go to GitHub with the token you provided. The token is not sent to our server.</p>
+<h2>Images and external links</h2>
+<p>Markdown can embed images by https URL, including CDNs, badges, charts and GIFs. When such a document is previewed, your browser requests the image directly from that host, which can see your IP address and user agent. mdstudio sends no referrer with these requests. Relative image paths are resolved locally from your workspace and are never sent anywhere. The <i>preview site</i> sandbox may also load https images.</p>
 <h2>Server and hosting</h2>
 <p>The app is hosted on Vercel, which may keep standard request logs (such as IP address and user agent). We run no database, no analytics, and no advertising.</p>
 <h2>Your control</h2>
@@ -71,14 +74,15 @@
 <p>Questions or requests: open an issue at <a href="https://github.com/arlingkin/mdstudio/issues" rel="noopener">github.com/arlingkin/mdstudio/issues</a>. This policy may change; the effective date above will be updated.</p>
 </div>
 <div data-l="id">
-<h1>Kebijakan Privasi</h1>
-<p class="meta"><a href="/">mdstudio</a> · Berlaku 2026-11-08</p>
+<h1><svg class="ic ic-l" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg>Kebijakan Privasi</h1>
+<p class="meta"><a href="/">mdstudio</a> · Berlaku 2026-11-10</p>
 <p>mdstudio adalah editor dan pratinjau Markdown statis untuk penggunaan pribadi. Aplikasi bisa membuka file dari perangkatmu, Google Drive, dan repositori GitHub publik. Halaman ini menjelaskan data apa yang disentuh aplikasi dan bagaimana dipakai.</p>
 <h2>Data pengguna Google</h2>
 <ul>
 <li>Scope yang diminta: <code>https://www.googleapis.com/auth/drive</code>, dipakai hanya untuk menampilkan, membuka, membuat, dan memperbarui file serta folder yang kamu pilih di Google Drive milikmu.</li>
 <li>Isi file diambil langsung antara browsermu dan Google API. Isi file tidak dikirim ke atau disimpan di server kami.</li>
 <li>Login Google berjalan lewat serverless function yang menukar kode OAuth dengan token. Refresh token dienkripsi (AES-256-GCM) dan disimpan hanya di cookie httpOnly di browsermu. Access token berumur pendek hanya disimpan di memori browser.</li>
+<li>Menghapus berkas dari aplikasi memindahkannya ke sampah Google Drive; berkas tidak dihapus permanen.</li>
 <li>Kami tidak memakai data pengguna Google untuk iklan, analitik, profiling, atau dijual, dan tidak membagikannya ke pihak ketiga.</li>
 <li>Penggunaan informasi dari Google API oleh mdstudio mematuhi <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, termasuk persyaratan Limited Use.</li>
 </ul>
@@ -91,6 +95,8 @@
 </ul>
 <h2>GitHub</h2>
 <p>Repositori dibaca dari api.github.com dan raw.githubusercontent.com langsung oleh browsermu. Jika kamu commit, request dikirim ke GitHub dengan token yang kamu berikan. Token tidak dikirim ke server kami.</p>
+<h2>Gambar dan tautan eksternal</h2>
+<p>Markdown bisa menyematkan gambar lewat URL https, termasuk CDN, badge, grafik, dan GIF. Saat dokumen seperti itu dipratinjau, browsermu meminta gambar langsung ke host tersebut, yang bisa melihat alamat IP dan user agent-mu. mdstudio tidak mengirim referrer pada permintaan ini. Path gambar relatif diselesaikan secara lokal dari workspace-mu dan tidak pernah dikirim ke mana pun. Sandbox <i>pratinjau situs</i> juga bisa memuat gambar https.</p>
 <h2>Server dan hosting</h2>
 <p>Aplikasi di-host di Vercel, yang bisa menyimpan log request standar (misalnya alamat IP dan user agent). Kami tidak menjalankan database, analitik, maupun iklan.</p>
 <h2>Kendalimu</h2>
@@ -103,5 +109,11 @@
 <p>Pertanyaan atau permintaan: buka issue di <a href="https://github.com/arlingkin/mdstudio/issues" rel="noopener">github.com/arlingkin/mdstudio/issues</a>. Kebijakan ini bisa berubah; tanggal berlaku di atas akan diperbarui.</p>
 </div>
 </div></main>
+<footer class="legal-foot"><div class="lf-in">
+  <span class="lf-brand"><svg class="ic logo" aria-hidden="true"><use href="/assets/icons/sprite.svg#logo"/></svg><b>mdstudio</b></span>
+  <span data-l="en">© 2026 arlingkin · free software under the <a href="https://github.com/arlingkin/mdstudio/blob/main/LICENSE" rel="noopener">GNU GPL v3</a></span>
+  <span data-l="id">© 2026 arlingkin · perangkat lunak bebas di bawah <a href="https://github.com/arlingkin/mdstudio/blob/main/LICENSE" rel="noopener">GNU GPL v3</a></span>
+  <nav class="lf-nav"><a href="https://github.com/arlingkin/mdstudio" rel="noopener"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg>arlingkin/mdstudio</a><a href="/guide"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#book-open"/></svg>guide</a><a href="/privacy"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#shield-check"/></svg>privacy</a><a href="/terms"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#file-text"/></svg>terms</a></nav>
+</div></footer>
 </body>
 </html>

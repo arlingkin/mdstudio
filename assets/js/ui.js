@@ -268,6 +268,7 @@ function commands() {
   add('google-drive', t('w.drive.go'), click('btn-drive'), '', drv);
   if (f) add('cloud-upload', t('act.todrive'), click('btn-todrive'), '', drv);
   add('refresh-cw', t('act.auto'), click('btn-auto'), '', drv);
+  if (f && f.src.type === 'drive' && f.src.id) add('trash-2', t('act.ddel'), click('btn-ddel'), '', drv);
   add('github', t('gh.go'), () => { showSide(); $('#gh-url').focus(); }, '', gh);
   if (ghActive(f)) {
     add('play', t('gh.run'), click('gh-run'), '', gh);

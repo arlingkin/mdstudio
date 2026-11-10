@@ -15,6 +15,14 @@ const apply = () => {
   bt.textContent = lang === 'id' ? 'tema' : 'theme';
   document.title = document.documentElement.dataset[lang === 'id' ? 'titleId' : 'titleEn'];
 };
+document.querySelectorAll('.legal-in > [data-l]').forEach(box => {
+  const hs = [...box.querySelectorAll('h2')], meta = box.querySelector('.meta');
+  if (!meta || hs.length < 3) return;
+  const nav = document.createElement('nav');
+  nav.className = 'l-toc';
+  hs.forEach((h, i) => { h.id = 'l-' + box.dataset.l + '-' + i; const a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent; nav.append(a); });
+  meta.after(nav);
+});
 bl.addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); apply(); });
 bt.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; LS.set('mdstudio-theme', theme); apply(); });
 apply();

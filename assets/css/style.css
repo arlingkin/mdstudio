@@ -321,3 +321,4 @@ a.img-miss { color: var(--link); text-decoration: none; }
 .md pre { position: relative; }
 .cp { position: absolute; top: .35rem; right: .35rem; display: inline-flex; padding: .25rem; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; color: var(--faint); cursor: pointer; opacity: .85; }
 .cp:hover { color: var(--link); opacity: 1; }
+.hero-a { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
