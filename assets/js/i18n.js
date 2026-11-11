@@ -191,6 +191,8 @@ const T = {
   'gh.commit.d': { en:'Commit & push edited, new and renamed files to the repository branch. Needs a token.', id:'Commit & push berkas yang diubah, baru, dan diganti nama ke branch repositori. Perlu token.' },
   'gh.todrive.d': { en:'Copy this file, or the whole folder, from GitHub to your Google Drive. The repository is not changed.', id:'Salin berkas ini, atau seluruh folder, dari GitHub ke Google Drive. Repositori tidak berubah.' },
   'img.remote': { en:'External image failed to load, open link', id:'Gambar eksternal gagal dimuat, buka tautan' },
+  'sel.on':       { en:'Select files', id:'Pilih berkas' },
+  'sel.del':      { en:'Remove selected', id:'Hapus yang dipilih' },
   'md.note':      { en:'Note',      id:'Catatan' },
   'md.tip':       { en:'Tip',       id:'Tips' },
   'md.important': { en:'Important', id:'Penting' },

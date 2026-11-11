@@ -678,7 +678,21 @@ function renderTabs() {
     return d;
   }));
 }
-const dirState = new Map();
+const dirState = new Map(), sel = new Set();
+let selMode = false;
+const under = pre => [...S.files.keys()].filter(p => p.startsWith(pre + '/'));
+function syncSel() {
+  for (const p of sel) if (!S.files.has(p)) sel.delete(p);
+  $$('.pk', tree).forEach(c => {
+    const l = c.dataset.prefix ? under(c.dataset.prefix) : [c.dataset.path], n = l.filter(p => sel.has(p)).length;
+    c.checked = n > 0 && n === l.length;
+    c.indeterminate = n > 0 && n < l.length;
+  });
+  $('#btn-sel').setAttribute('aria-pressed', selMode);
+  $('#btn-seldel').hidden = !selMode || !sel.size;
+  $('#sel-n').textContent = sel.size ? ' ' + sel.size : '';
+}
+function setSel(on) { selMode = on; if (!on) sel.clear(); renderTree(); }
 function renderTree() {
   const root = {};
   for (const p of [...S.files.keys()].sort()) {
@@ -698,6 +712,7 @@ function renderTree() {
         b.textContent = k;
         b.title = v;
         b.dataset.path = v;
+        if (selMode) { const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'pk'; c.dataset.path = v; c.ariaLabel = k; li.classList.add('pk-row'); li.append(c); }
         li.append(b);
       } else {
         const d = document.createElement('details'), s = document.createElement('summary'), np = pre ? pre + '/' + k : k;
@@ -710,6 +725,7 @@ function renderTree() {
         rm.dataset.prefix = np;
         rm.title = rm.ariaLabel = t('rm.title');
         rm.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg>';
+        if (selMode) { const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'pk'; c.dataset.prefix = np; c.ariaLabel = k; s.append(c); }
         s.append(lb, rm);
         d.append(s, build(v, np));
         li.append(d);
@@ -720,6 +736,7 @@ function renderTree() {
   };
   if (Object.keys(root).length) tree.replaceChildren(build(root));
   else { const p = document.createElement('p'); p.className = 'empty-tree'; p.textContent = t('tree.empty'); tree.replaceChildren(p); }
+  syncSel();
 }
 function loadEditor() {
   const f = cur();
@@ -834,11 +851,20 @@ document.addEventListener('keydown', e => {
 tree.addEventListener('click', e => {
   const r = e.target.closest('.rm');
   if (r) { e.preventDefault(); e.stopPropagation(); removeFiles([...S.files.keys()].filter(p => p.startsWith(r.dataset.prefix + '/'))); return; }
+  const pk = e.target.closest('.pk');
+  if (pk) {
+    for (const p of pk.dataset.prefix ? under(pk.dataset.prefix) : [pk.dataset.path]) pk.checked ? sel.add(p) : sel.delete(p);
+    syncSel();
+    return;
+  }
   const sm = e.target.closest('summary');
   if (sm) { const d = sm.parentNode; setTimeout(() => dirState.set(d.dataset.pre, d.open), 0); return; }
   const b = e.target.closest('.node');
-  if (b) openTab(b.dataset.path);
+  if (b && selMode) { sel.has(b.dataset.path) ? sel.delete(b.dataset.path) : sel.add(b.dataset.path); syncSel(); }
+  else if (b) openTab(b.dataset.path);
 });
+$('#btn-sel').addEventListener('click', () => setSel(!selMode));
+$('#btn-seldel').addEventListener('click', () => { if (removeFiles([...sel])) setSel(false); });
 tabsEl.addEventListener('click', e => {
   const x = e.target.closest('[data-close]'), b = e.target.closest('.tab-name');
   if (x) closeTab(x.dataset.close); else if (b) openTab(b.dataset.path);

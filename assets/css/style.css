@@ -333,3 +333,10 @@ a.img-miss { color: var(--link); text-decoration: none; }
 .cp { position: absolute; top: .35rem; right: .35rem; display: inline-flex; padding: .25rem; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; color: var(--faint); cursor: pointer; opacity: .85; }
 .cp:hover { color: var(--link); opacity: 1; }
 .hero-a { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.side-h .btn + .btn { margin-left: 0; }
+#btn-sel, #btn-seldel { padding: .1rem .4rem; }
+#btn-seldel { color: var(--orange); }
+#btn-seldel[hidden] { display: none; }
+.pk { accent-color: var(--lime); flex: none; margin: 0 .4rem 0 .2rem; }
+.pk-row { display: flex; align-items: center; }
+.side summary .pk { vertical-align: middle; }
