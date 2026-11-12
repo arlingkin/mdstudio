@@ -6,9 +6,10 @@ const NAME = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/, REPO = /^(?!\.{1,2}$)[A-Za-z
 const safePath = p => p.split('/').every(s => s && s !== '.' && s !== '..' && !/[\\\0]/.test(s));
 function parseGh(raw) {
   const s = String(raw).trim();
-  let m = /^(?:https:\/\/)?(?:www\.)?github\.com\/([^/\s?#]+)\/([^/\s?#]+?)(?:\.git)?(?:\/(tree|blob)\/([^/\s?#]+)(?:\/([^\s?#]*?))?)?\/?(?:[?#]\S*)?$/i.exec(s);
+  let m = /^(?:https:\/\/)?(?:www\.)?github\.com\/([^/\s?#]+)\/([^/\s?#]+?)(?:\.git)?(?:\/(tree|blob|raw)\/([^/\s?#]+)(?:\/([^\s?#]*?))?)?\/?(?:[?#]\S*)?$/i.exec(s);
   let o;
-  if (m) o = { user: m[1], repo: m[2], kind: m[3] || '', ref: m[4] || '', path: m[5] || '' };
+  if (m) o = { user: m[1], repo: m[2], kind: m[3] ? (m[3].toLowerCase() === 'tree' ? 'tree' : 'blob') : '', ref: m[4] || '', path: m[5] || '' };
+  else if ((m = /^(?:https:\/\/)?raw\.githubusercontent\.com\/([^/\s?#]+)\/([^/\s?#]+)\/(?:refs\/heads\/)?([^/\s?#]+)\/([^\s?#]+?)\/?(?:[?#]\S*)?$/i.exec(s))) o = { user: m[1], repo: m[2], kind: 'blob', ref: m[3], path: m[4] };
   else if ((m = /^([^/\s]+)\/([^/\s]+)$/.exec(s))) o = { user: m[1], repo: m[2], kind: '', ref: '', path: '' };
   else return null;
   try { o.ref = o.ref && decodeURIComponent(o.ref); o.path = o.path && decodeURIComponent(o.path).replace(/\/+$/, ''); } catch { return null; }
@@ -96,8 +97,17 @@ async function clone(o) {
   const info = await gh(b);
   const ref = o.ref || info.default_branch;
   const head = (await gh(`${b}/git/ref/${enc('heads/' + ref)}`)).object.sha;
+  const one = o.kind === 'blob' && o.path;
   const dirPath = o.kind === 'tree' ? o.path : '';
-  const tr = await gh(`${b}/git/trees/${head}${dirPath ? ':' + enc(dirPath) : ''}?recursive=1`);
+  let tr;
+  if (one) {
+    // Single file: read only its parent dir listing instead of the whole repo tree.
+    const i = o.path.lastIndexOf('/'), dir = i < 0 ? '' : o.path.slice(0, i), name = o.path.slice(i + 1);
+    const t1 = await gh(`${b}/git/trees/${head}${dir ? ':' + enc(dir) : ''}`);
+    const e1 = t1.tree.find(x => x.type === 'blob' && x.path === name);
+    if (!e1) throw new Error('ghnotfound');
+    tr = { tree: [{ ...e1, path: o.path }], truncated: false };
+  } else tr = await gh(`${b}/git/trees/${head}${dirPath ? ':' + enc(dirPath) : ''}?recursive=1`);
   const key = `gh/${o.user}/${o.repo}@${ref.replace(/\//g, '_')}`;
   groups.set(key, { key, user: o.user, repo: o.repo, ref, head });
   saveGroups();
@@ -278,6 +288,24 @@ async function toDrive() {
     toast(t('gh.copied', { n, s: skipped ? t('msg.skipped', { n: skipped }) : '' }));
   } catch (e) { toast(gm(e)); }
 }
+
+const pop = $('#gh-pop'), pbtn = $('#gh-info');
+const EX = [['gh.pop.repo', 'github.com/user/repo'], ['gh.pop.file', 'github.com/user/repo/blob/main/variable.md'], ['gh.pop.dir', 'github.com/user/repo/tree/main/docs'], ['gh.pop.raw', 'https://raw.githubusercontent.com/user/repo/main/variable.md']];
+function setPop(open) {
+  if (open) {
+    const mk = (tag, txt) => Object.assign(document.createElement(tag), { textContent: txt });
+    const n = [mk('strong', t('gh.pop.t'))];
+    for (const [k, u] of EX) { const b = mk('button', u); b.type = 'button'; b.className = 'gh-ex'; b.dataset.url = u; n.push(mk('span', t(k)), b); }
+    n.push(mk('small', t('gh.pop.n')));
+    pop.replaceChildren(...n);
+  }
+  pop.hidden = !open;
+  pbtn.setAttribute('aria-expanded', open);
+}
+pbtn.addEventListener('click', () => setPop(pop.hidden));
+pop.addEventListener('click', e => { const b = e.target.closest('.gh-ex'); if (b) { $('#gh-url').value = b.dataset.url; setPop(false); } });
+document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target) && !pbtn.contains(e.target)) setPop(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { setPop(false); pbtn.focus(); } });
 
 $('#gh-go').addEventListener('click', () => go($('#gh-url').value));
 $('#gh-url').addEventListener('keydown', e => { if (e.key === 'Enter') go(e.target.value); });

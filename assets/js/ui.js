@@ -280,7 +280,7 @@ function commands() {
   if (f) { add('pencil', t('act.rename'), click('btn-rename'), 'F2', t('sc.file')); add('copy', t('act.copy'), click('btn-copy'), '', t('sc.file')); add('copy-plus', t('act.dup'), click('btn-dup'), '', t('sc.file')); }
   if (f) {
     add('save', t('act.save'), () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })), 'Ctrl+S');
-    add('lock', t('act.ro'), click('btn-ro'));
+    if (app.dataset.mode !== 'preview') add('lock', t('act.ro'), click('btn-ro'));
   }
   add('pencil', t('mode.editor'), () => $('#modes [data-mode="editor"]').click());
   add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());

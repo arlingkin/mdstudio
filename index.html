@@ -89,7 +89,8 @@
       <nav id="dtree" data-i18n-label="act.drive"></nav>
     </div>
     <div id="ghwrap">
-      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span></div>
+      <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span><button class="btn btn-i" type="button" id="gh-info" aria-expanded="false" data-i18n-label="gh.info"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#info"/></svg></button></div>
+      <div class="gh-pop" id="gh-pop" hidden role="dialog" data-i18n-label="gh.info"></div>
       <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#arrow-right"/></svg><span data-i18n="gh.go"></span></button></div>
       <ul class="repos" id="gh-repos" data-i18n-label="gh.repos"></ul>
       <details id="gh-tok"><summary><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#key-round"/></svg><span data-i18n="gh.token"></span></summary>

@@ -815,6 +815,7 @@ function setTheme(th) {
 }
 function setMode(m) {
   app.dataset.mode = m;
+  $('#btn-ro').hidden = m === 'preview';
   LS.set('mdstudio-mode', m);
   $$('#modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
 }
