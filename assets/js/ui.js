@@ -330,7 +330,9 @@ function openPal() {
   pin.value = '';
   pal.hidden = false;
   filter();
-  pin.focus();
+  // Touch: skip focus so the keyboard stays hidden; tapping the field opens it.
+  if (matchMedia('(hover: none) and (pointer: coarse)').matches) pal.querySelector('.pal-box').tabIndex = -1, pal.querySelector('.pal-box').focus({ preventScroll: true });
+  else pin.focus();
 }
 function closePal() {
   pal.hidden = true;

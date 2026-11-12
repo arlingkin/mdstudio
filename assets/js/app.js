@@ -530,6 +530,7 @@ async function renameFile(p = S.active) {
   const f = S.files.get(p);
   if (!f) return;
   if (saving.has(p)) { toast(t('rn.busy')); return; }
+  if (app.dataset.mode === 'preview') setMode('editor');
   const o = base(p), v = prompt(t('rn.prompt'), o), n = v === null ? '' : v.trim();
   if (!n || n === o) return;
   if (n.length > 200 || /[\\/\0]/.test(n) || n === '.' || n === '..') { toast(t('rn.invalid')); return; }
