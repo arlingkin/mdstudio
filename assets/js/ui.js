@@ -257,6 +257,17 @@ const pal = $('#palette'), pin = $('#pal-in'), plist = $('#pal-list');
 let items = [], sel = 0, lastFocus = null;
 const click = id => () => $('#' + id).click();
 const showSide = () => { if (app.classList.contains('side-off')) setSide(true); app.classList.add('tree-open'); };
+function showGh(v) {
+  showSide();
+  const w = $('#ghwrap'), i = $('#gh-url');
+  if (typeof v === 'string') i.value = v;
+  w.scrollIntoView({ block: 'start' });
+  w.classList.remove('flash');
+  void w.offsetWidth;
+  w.classList.add('flash');
+  i.focus({ preventScroll: true });
+}
+if (window.MD) MD.showGh = showGh;
 function commands() {
   const c = [], f = MD.cur();
   const add = (icon, label, run, key, scope) => c.push({ icon, label: scope ? scope + ' · ' + label : label, run, key });
@@ -269,7 +280,7 @@ function commands() {
   if (f) add('cloud-upload', t('act.todrive'), click('btn-todrive'), '', drv);
   add('refresh-cw', t('act.auto'), click('btn-auto'), '', drv);
   if (f && f.src.type === 'drive' && f.src.id) add('trash-2', t('act.ddel'), click('btn-ddel'), '', drv);
-  add('github', t('gh.go'), () => { showSide(); $('#gh-url').focus(); }, '', gh);
+  add('github', t('gh.go'), () => showGh(), '', gh);
   if (ghActive(f)) {
     add('play', t('gh.run'), click('gh-run'), '', gh);
     add('git-commit-horizontal', t('gh.commit'), click('gh-commit'), '', gh);

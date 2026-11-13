@@ -18,7 +18,9 @@ html[lang="en"] [data-l="id"], html[lang="id"] [data-l="en"] { display: none; }
 .lf-in a:hover { color: var(--link); }
 .lf-brand { display: inline-flex; align-items: center; gap: .4rem; color: var(--ink); }
 .lf-nav { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-left: auto; }
-@media (max-width: 800px) { .bar .group .btn span { display: none; } .lf-nav { margin-left: 0; } }
+@media (max-width: 800px) { .bar .group a.btn span { display: none; } .lf-nav { margin-left: 0; } }
+@media (max-width: 800px) { .bar .group { flex-wrap: nowrap; gap: .2rem; } .bar .group .btn { padding: 0 .45rem; gap: .3rem; font-size: 12px; } }
+@media (max-width: 400px) { .bar .brand span { display: none; } }
 .legal .nf-code { font: 600 clamp(4rem, 18vw, 7rem) var(--font-mono); line-height: 1; margin: 1rem 0 .5rem; color: var(--link); }
 .nf-act { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.2rem; }
 .legal .nf-act .btn { text-decoration: none; color: var(--ink); }

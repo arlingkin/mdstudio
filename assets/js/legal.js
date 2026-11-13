@@ -8,11 +8,14 @@ let lang = LS.get('mdstudio-lang', /^id/i.test(navigator.language) ? 'id' : 'en'
 let theme = LS.get('mdstudio-theme', 'dark') === 'light' ? 'light' : 'dark';
 const bl = document.getElementById('btn-lang');
 const bt = document.getElementById('btn-theme');
+const bls = bl.querySelector('span'), bts = bt.querySelector('span');
 const apply = () => {
   document.documentElement.lang = lang;
   document.documentElement.dataset.theme = theme;
-  bl.textContent = lang.toUpperCase();
-  bt.textContent = lang === 'id' ? 'tema' : 'theme';
+  bls.textContent = lang.toUpperCase();
+  bts.textContent = lang === 'id' ? 'tema' : 'theme';
+  bl.title = lang === 'id' ? 'Bahasa' : 'Language';
+  bt.title = bts.textContent;
   document.title = document.documentElement.dataset[lang === 'id' ? 'titleId' : 'titleEn'];
 };
 document.querySelectorAll('.legal-in > [data-l]').forEach(box => {

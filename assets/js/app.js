@@ -805,7 +805,7 @@ function applyI18n() {
   $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   $$('[data-i18n-label]').forEach(el => { const s = t(el.dataset.i18nLabel); el.setAttribute('aria-label', s); el.title = s; });
-  $('#btn-lang').textContent = lang.toUpperCase();
+  $('#btn-lang span').textContent = lang.toUpperCase();
 }
 function setTheme(th) {
   theme = th;
@@ -915,12 +915,14 @@ $('#btn-lang').addEventListener('click', () => { lang = lang === 'en' ? 'id' : '
 $('#btn-tree').addEventListener('click', () => app.classList.toggle('tree-open'));
 new MutationObserver(() => $('#btn-tree').setAttribute('aria-expanded', app.classList.contains('tree-open'))).observe(app, { attributes: true, attributeFilter: ['class'] });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') app.classList.remove('tree-open'); });
-$('.work').addEventListener('click', () => app.classList.remove('tree-open'));
+$('.work').addEventListener('click', e => { if (!e.target.closest('[data-act="gh"], [data-gh-ex]')) app.classList.remove('tree-open'); });
 $('.welcome').addEventListener('click', e => {
+  const ex = e.target.closest('[data-gh-ex]');
+  if (ex) { MD.showGh(ex.dataset.ghEx); return; }
   const b = e.target.closest('[data-act]');
   if (!b) return;
   if (b.dataset.act === 'sample') openTab((S.files.get('welcome.md') || addFile('welcome.md', SAMPLE, { type: 'draft' }, true)).path);
-  else if (b.dataset.act === 'gh') { app.classList.add('tree-open'); $('#gh-url').focus(); } else $('#btn-' + b.dataset.act).click();
+  else if (b.dataset.act === 'gh') MD.showGh(); else $('#btn-' + b.dataset.act).click();
 });
 $('#file-in').addEventListener('change', e => { const l = [...e.target.files]; e.target.value = ''; onPicked(l); });
 if (!window.showDirectoryPicker) $('#btn-folder').hidden = true;

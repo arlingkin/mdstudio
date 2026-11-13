@@ -44,7 +44,7 @@
   <div class="group g-view">
     <button class="btn" type="button" id="btn-palette" data-i18n-label="p.title"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#command"/></svg></button>
     <button class="btn" type="button" id="btn-theme"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#sun-moon"/></svg><span data-i18n="act.theme"></span></button>
-    <button class="btn" type="button" id="btn-lang" data-i18n-label="act.lang"></button>
+    <button class="btn" type="button" id="btn-lang" data-i18n-label="act.lang"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#languages"/></svg><span></span></button>
   </div>
 </header>
 <div class="tools" id="actions" role="toolbar" data-i18n-label="tools.label">
@@ -92,6 +92,7 @@
       <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#github"/></svg><span data-i18n="gh.title"></span><button class="btn btn-i" type="button" id="gh-info" aria-expanded="false" data-i18n-label="gh.info"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#info"/></svg></button></div>
       <div class="gh-pop" id="gh-pop" hidden role="dialog" data-i18n-label="gh.info"></div>
       <div class="gh-row"><input class="field" id="gh-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" data-i18n-ph="gh.ph" data-i18n-label="gh.ph"><button class="btn" type="button" id="gh-go"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#arrow-right"/></svg><span data-i18n="gh.go"></span></button></div>
+      <p class="gh-hint" data-i18n="gh.hint"></p>
       <ul class="repos" id="gh-repos" data-i18n-label="gh.repos"></ul>
       <details id="gh-tok"><summary><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#key-round"/></svg><span data-i18n="gh.token"></span></summary>
         <div class="gh-row"><input class="field" id="gh-tokin" type="password" autocomplete="off" spellcheck="false" data-i18n-label="gh.token"><button class="btn" type="button" id="gh-tokset" data-i18n="gh.tokset"></button></div>
@@ -143,6 +144,19 @@
           <p data-i18n="w.gh.d"></p>
           <div class="card-a"><button class="btn" type="button" data-act="gh"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg><span data-i18n="w.gh.go"></span></button></div>
         </div>
+        </div>
+        <h2 data-i18n="w.tut"></h2>
+        <div class="tut">
+          <ol class="tut-steps">
+            <li><span class="tut-n">1</span><div><h3 data-i18n="w.t1.t"></h3><p data-i18n="w.t1.d"></p></div></li>
+            <li><span class="tut-n">2</span><div><h3 data-i18n="w.t2.t"></h3><p data-i18n="w.t2.d"></p></div></li>
+            <li><span class="tut-n">3</span><div><h3 data-i18n="w.t3.t"></h3><p data-i18n="w.t3.d"></p></div></li>
+          </ol>
+          <ul class="fmts" data-i18n-label="w.fmts">
+            <li><code>user/repo</code><span data-i18n="w.f1"></span><button class="btn" type="button" data-gh-ex="arlingkin/mdstudio"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg><span data-i18n="w.fill"></span></button></li>
+            <li><code>github.com/user/repo/tree/main/docs</code><span data-i18n="w.f2"></span><button class="btn" type="button" data-gh-ex="https://github.com/arlingkin/mdstudio/tree/main/.github"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg><span data-i18n="w.fill"></span></button></li>
+            <li><code>github.com/user/repo/blob/main/README.md</code><span data-i18n="w.f3"></span><button class="btn" type="button" data-gh-ex="https://github.com/arlingkin/mdstudio/blob/main/README.md"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#link"/></svg><span data-i18n="w.fill"></span></button></li>
+          </ul>
         </div>
         <h2 class="only-l" data-i18n="w.keys"></h2>
         <ul class="kbds only-l">
