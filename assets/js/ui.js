@@ -297,6 +297,7 @@ function commands() {
   add('columns-2', t('mode.split'), () => $('#modes [data-mode="split"]').click());
   add('eye', t('mode.preview'), () => $('#modes [data-mode="preview"]').click());
   add('sun-moon', t('act.theme'), click('btn-theme'));
+  add('palette', t('act.accent'), click('btn-accent'));
   add('languages', t('act.lang'), click('btn-lang'));
   if (!mq.matches) {
     add('panel-left', t('p.side'), () => setSide(app.classList.contains('side-off')), 'Ctrl+\\');

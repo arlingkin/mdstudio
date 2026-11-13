@@ -9,6 +9,8 @@ const LS = {
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let lang = LS.get('mdstudio-lang', /^id/i.test(navigator.language) ? 'id' : 'en');
 let theme = LS.get('mdstudio-theme', 'dark') === 'light' ? 'light' : 'dark';
+const ACCENTS = ['lime', 'blue', 'pink', 'amber', 'violet'];
+let accent = ACCENTS.includes(LS.get('mdstudio-accent', 'lime')) ? LS.get('mdstudio-accent', 'lime') : 'lime';
 const t = (k, v = {}) => {
   const e = T[k];
   let s = e ? (e[lang] || e.en) : k;
@@ -421,11 +423,29 @@ const inl = (name, re, tag, ch) => ({
   tokenizer(src) { const m = re.exec(src); if (m) return { type: name, raw: m[0], tokens: this.lexer.inlineTokens(m[1]) }; },
   renderer(tk) { return `<${tag}>${this.parser.parseInline(tk.tokens)}</${tag}>`; }
 });
+const MATH_MAX = 4000;
+const mathHtml = (tex, d) => {
+  const tag = d ? 'div' : 'span';
+  return `<${tag} class="math${d ? ' math-d' : ''}" data-tex="${esc(tex)}">${esc(d ? '$$' + tex + '$$' : '$' + tex + '$')}</${tag}>`;
+};
+const mathInline = {
+  name: 'mathInline', level: 'inline',
+  start: s => s.indexOf('$'),
+  tokenizer(src) { const m = /^(\${1,2})(?!\s)((?:\\[\s\S]|[^$\\\n])+?)(?<!\s)\1(?!\d)/.exec(src); if (m) return { type: 'mathInline', raw: m[0], text: m[2] }; },
+  renderer: tk => mathHtml(tk.text, false)
+};
+const mathBlock = {
+  name: 'mathBlock', level: 'block',
+  start: s => s.indexOf('$$'),
+  tokenizer(src) { const m = /^\$\$[ \t]*\n?([\s\S]+?)\n?[ \t]*\$\$[ \t]*(?:\n|$)/.exec(src); if (m && m[1].trim()) return { type: 'mathBlock', raw: m[0], text: m[1].trim() }; },
+  renderer: tk => mathHtml(tk.text, true) + '\n'
+};
 marked.use({
   gfm: true,
   extensions: [
     inl('mark', /^==(?=\S)([^=\n]+?)(?<=\S)==/, 'mark', '=='),
-    inl('sup', /^\^(?=\S)([^^\s]+?)\^/, 'sup', '^')
+    inl('sup', /^\^(?=\S)([^^\s]+?)\^/, 'sup', '^'),
+    mathInline, mathBlock
   ],
   renderer: {
     blockquote(q) {
@@ -608,6 +628,37 @@ async function hydrateMermaid(root, th, gen) {
   }
 }
 
+let kxP = null;
+const loadKx = () => kxP || (kxP = new Promise((ok, no) => {
+  const l = document.createElement('link'), s = document.createElement('script');
+  let n = 2;
+  const fail = () => { kxP = null; l.remove(); s.remove(); no(); };
+  const done = () => { if (!--n) window.katex ? ok(window.katex) : fail(); };
+  l.rel = 'stylesheet'; l.href = '/assets/vendor/katex/katex.min.css'; l.onload = done; l.onerror = fail;
+  s.src = '/assets/vendor/katex/katex.min.js'; s.onload = done; s.onerror = fail;
+  document.head.append(l, s);
+}));
+// Loads KaTeX only when the doc has math; renders in ~4ms slices so big docs never block the UI.
+async function hydrateMath(root, gen) {
+  const els = $$('.math', root);
+  if (!els.length) return;
+  let k;
+  try { k = window.katex || await loadKx(); } catch { return; }
+  const lite = els.length > 150; // big docs: skip MathML to halve the DOM
+  let t0 = performance.now();
+  for (let i = 0; i < els.length && i < 2000; i++) {
+    const el = els[i], tex = el.dataset.tex, raw = el.textContent;
+    if (!tex || tex.length > MATH_MAX) continue;
+    try { k.render(tex, el, { displayMode: el.tagName === 'DIV', throwOnError: false, strict: 'ignore', output: lite ? 'html' : 'htmlAndMathml', trust: false, maxExpand: 1000, maxSize: 30 }); }
+    catch { el.textContent = raw; }
+    if (performance.now() - t0 > 4) {
+      await new Promise(requestAnimationFrame);
+      if (gen !== imgGen || !root.isConnected) return;
+      t0 = performance.now();
+    }
+  }
+}
+
 function renderMd(src) {
   const { fm, body } = parseFM(src);
   const th = fm.theme === 'light' || fm.theme === 'dark' ? fm.theme : theme;
@@ -617,6 +668,7 @@ function renderMd(src) {
   doc.innerHTML = DOMPurify.sanitize(marked.parse(body), SAN);
   hydrateImgs(doc, S.active || '', ++imgGen);
   hydrateMermaid(doc, th, imgGen);
+  hydrateMath(doc, imgGen);
   $$('pre', doc).forEach(pre => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -813,6 +865,12 @@ function setTheme(th) {
   LS.set('mdstudio-theme', th);
   render();
 }
+function setAccent(a, say) {
+  accent = a;
+  document.documentElement.dataset.accent = a;
+  LS.set('mdstudio-accent', a);
+  if (say) toast(t('acc.set', { c: t('acc.' + a) }));
+}
 function setMode(m) {
   app.dataset.mode = m;
   $('#btn-ro').hidden = m === 'preview';
@@ -911,6 +969,8 @@ $('#btn-glogout').addEventListener('click', async () => {
   dwrap.hidden = true;
 });
 $('#btn-theme').addEventListener('click', () => setTheme(theme === 'dark' ? 'light' : 'dark'));
+$('#btn-accent').addEventListener('click', () => setAccent(ACCENTS[(ACCENTS.indexOf(accent) + 1) % ACCENTS.length], true));
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 $('#btn-lang').addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); applyI18n(); renderAll(); });
 $('#btn-tree').addEventListener('click', () => app.classList.toggle('tree-open'));
 new MutationObserver(() => $('#btn-tree').setAttribute('aria-expanded', app.classList.contains('tree-open'))).observe(app, { attributes: true, attributeFilter: ['class'] });
@@ -943,6 +1003,7 @@ MD.ready = (async function init() {
   applyI18n();
   $('#btn-auto').setAttribute('aria-pressed', auto);
   document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.accent = accent;
   setMode(['editor', 'split', 'preview'].includes(LS.get('mdstudio-mode', 'split')) ? LS.get('mdstudio-mode', 'split') : 'split');
   let files = [], ui;
   try { files = await DB.all(); ui = await DB.getMeta('ui'); } catch {}
