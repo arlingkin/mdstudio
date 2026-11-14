@@ -213,6 +213,7 @@ const T = {
   'md.warning':   { en:'Warning',   id:'Peringatan' },
   'md.caution':   { en:'Caution',   id:'Awas' },
   'md.mmerr':     { en:'Diagram could not be rendered', id:'Diagram tidak dapat dirender' },
+  'w.visits': { en:'unique devices', id:'perangkat unik' },
   'w.tut': { en:'GitHub in 3 steps', id:'GitHub dalam 3 langkah' },
   'w.t1.t': { en:'Open the link column', id:'Buka kolom link' },
   'w.t1.d': { en:'Press Enter link in the GitHub card, or search "GitHub" in the command palette (Ctrl/⌘+K). The files column opens with the link box ready.', id:'Tekan Isi link di kartu GitHub, atau cari "GitHub" di palet perintah (Ctrl/⌘+K). Kolom berkas terbuka dengan kotak link siap diisi.' },

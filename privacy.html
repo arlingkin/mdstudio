@@ -63,7 +63,7 @@
 <h2>Images and external links</h2>
 <p>Markdown can embed images by https URL, including CDNs, badges, charts and GIFs. When such a document is previewed, your browser requests the image directly from that host, which can see your IP address and user agent. mdstudio sends no referrer with these requests. Relative image paths are resolved locally from your workspace and are never sent anywhere. The <i>preview site</i> sandbox may also load https images.</p>
 <h2>Server and hosting</h2>
-<p>The app is hosted on Vercel, which may keep standard request logs (such as IP address and user agent). We run no database, no analytics, and no advertising.</p>
+<p>The app is hosted on Vercel, which may keep standard request logs (such as IP address and user agent). We run no analytics and no advertising. The only data we store is a visitor counter: your browser sends a hash of coarse device traits (OS family, screen size, CPU cores, touch points, time zone, language), which the server turns into a salted one-way hash and keeps in a small key-value store to count unique devices. It cannot be reversed into those traits and is not linked to your Google account, files, or IP address.</p>
 <h2>Your control</h2>
 <ul>
 <li>Use logout in the app to revoke the Google token and delete the cookie.</li>
@@ -98,7 +98,7 @@
 <h2>Gambar dan tautan eksternal</h2>
 <p>Markdown bisa menyematkan gambar lewat URL https, termasuk CDN, badge, grafik, dan GIF. Saat dokumen seperti itu dipratinjau, browsermu meminta gambar langsung ke host tersebut, yang bisa melihat alamat IP dan user agent-mu. mdstudio tidak mengirim referrer pada permintaan ini. Path gambar relatif diselesaikan secara lokal dari workspace-mu dan tidak pernah dikirim ke mana pun. Sandbox <i>pratinjau situs</i> juga bisa memuat gambar https.</p>
 <h2>Server dan hosting</h2>
-<p>Aplikasi di-host di Vercel, yang bisa menyimpan log request standar (misalnya alamat IP dan user agent). Kami tidak menjalankan database, analitik, maupun iklan.</p>
+<p>Aplikasi di-host di Vercel, yang bisa menyimpan log request standar (misalnya alamat IP dan user agent). Kami tidak menjalankan analitik maupun iklan. Satu-satunya data yang kami simpan adalah penghitung pengunjung: browsermu mengirim hash dari ciri perangkat yang kasar (keluarga OS, ukuran layar, jumlah core CPU, titik sentuh, zona waktu, bahasa), lalu server mengubahnya menjadi hash satu arah ber-salt dan menyimpannya di penyimpanan key-value kecil untuk menghitung perangkat unik. Hash itu tidak bisa dikembalikan ke ciri tersebut dan tidak dikaitkan dengan akun Google, berkas, atau alamat IP.</p>
 <h2>Kendalimu</h2>
 <ul>
 <li>Pakai logout di aplikasi untuk mencabut token Google dan menghapus cookie.</li>

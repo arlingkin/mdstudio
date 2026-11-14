@@ -151,6 +151,8 @@ button { font: inherit; color: inherit; }
 .welcome { display: none; flex: 1; min-height: 0; overflow: auto; padding: 2rem 1rem 3rem; }
 .app[data-kind="none"] .welcome { display: block; }
 .welcome-in { max-width: 860px; margin: 0 auto; }
+.visits { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: 0; color: var(--faint); font: 12px var(--font-mono); }
+.visits[hidden] { display: none; }
 .hero { text-align: center; padding: 1rem 0 1.5rem; }
 .hero h1 { font: 600 2rem var(--font-mono); color: var(--link); margin: .25rem 0; }
 .hero .tag { margin: 0 auto; max-width: 520px; color: var(--muted); }

@@ -95,6 +95,8 @@ Authentication uses Vercel Functions and the OAuth 2.0 authorization code flow w
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `COOKIE_KEY` | Secret used to protect the authentication cookie |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Redis REST credentials for the visitor counter (also accepted: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`). Without them the counter stays hidden |
+| `VISIT_SALT` | Optional salt for the visitor counter hash; falls back to `COOKIE_KEY` |
 
 Set the OAuth redirect URI (also in Google Cloud Console) to:
 
