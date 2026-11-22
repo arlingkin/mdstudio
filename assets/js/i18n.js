@@ -96,7 +96,6 @@ const T = {
   'w.drive.go': { en:'Open Drive', id:'Buka Drive' },
   'w.gh.d': { en:'Paste a repo, folder or file link in the side column that opens. Edit, preview index.html, commit & push.', id:'Tempel link repo, folder, atau berkas di kolom samping yang terbuka. Edit, pratinjau index.html, commit & push.' },
   'w.gh.go': { en:'Enter link', id:'Isi link' },
-  'w.projects': { en:'projects', id:'proyek' },
   'w.privacy': { en:'privacy', id:'privasi' },
   'w.terms': { en:'terms', id:'ketentuan' },
   'nav.guide': { en:'guide', id:'panduan' },
