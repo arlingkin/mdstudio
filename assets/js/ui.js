@@ -304,6 +304,7 @@ function commands() {
     add('maximize', t('p.focus'), toggleFocus, 'Ctrl+Shift+F');
   }
   add('book-open', t('p.guide'), () => { location.href = '/guide'; });
+  add('folder', t('w.projects'), () => { location.href = '/projects'; });
   add('shield-check', t('w.privacy'), () => { location.href = '/privacy'; });
   add('file-text', t('w.terms'), () => { location.href = '/terms'; });
   if (mdOn() && app.dataset.mode !== 'preview') {

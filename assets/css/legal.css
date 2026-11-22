@@ -25,3 +25,15 @@ html[lang="en"] [data-l="id"], html[lang="id"] [data-l="en"] { display: none; }
 .nf-act { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.2rem; }
 .legal .nf-act .btn { text-decoration: none; color: var(--ink); }
 @media (max-width: 800px) { .nf-act .btn span { display: inline; } }
+.pj-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); margin-top: 1rem; }
+.pj { position: relative; display: flex; gap: .9rem; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 1rem; transition: border-color .15s; }
+.pj:hover, .pj:focus-within { border-color: var(--link); }
+.pj-logo { flex: none; width: 48px; height: 48px; }
+.pj-b { min-width: 0; }
+.legal .pj h2 { margin: 0 0 .3rem; font-size: 1.05rem; }
+.legal .pj p { margin: 0 0 .4rem; font-size: .92rem; }
+.legal .pj .pj-t { margin: .5rem 0 0; color: var(--faint); font: 12px var(--font-mono); }
+.pj-a { color: var(--ink); text-decoration: none; }
+.pj-a::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+.pj-a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .pj { transition: none; } }
