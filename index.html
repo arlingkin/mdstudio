@@ -84,7 +84,12 @@
 <div class="app" id="app" data-mode="split" data-kind="none">
   <aside class="side" id="side">
   <div class="side-body">
-    <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span> <button class="btn" type="button" id="btn-sel" aria-pressed="false" data-i18n-label="sel.on"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#list-checks"/></svg></button><button class="btn" type="button" id="btn-seldel" data-i18n-label="sel.del" hidden><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg><span id="sel-n"></span></button></div>
+    <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#files"/></svg><span data-i18n="tree.title"></span> <button class="btn" type="button" id="btn-sel" aria-pressed="false" data-i18n-label="sel.on"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#list-checks"/></svg></button></div>
+    <div class="sel-bar" id="sel-bar" role="toolbar" data-i18n-label="sel.on" hidden>
+      <button class="btn" type="button" id="btn-selall"><span id="sel-all" data-i18n="sel.all"></span></button>
+      <button class="btn" type="button" id="btn-seldel" data-i18n-label="sel.del" disabled><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg><span data-i18n="sel.rm"></span><span id="sel-n"></span></button>
+      <button class="btn" type="button" id="btn-seldone"><span data-i18n="sel.done"></span></button>
+    </div>
     <nav id="tree" data-i18n-label="tree.title"></nav>
     <div id="dwrap" hidden>
       <div class="side-h"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#google-drive"/></svg><span data-i18n="act.drive"></span> <button class="btn" type="button" id="btn-glogout"><svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#log-out"/></svg><span data-i18n="act.logout"></span></button></div>

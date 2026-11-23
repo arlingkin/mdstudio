@@ -1,6 +1,6 @@
 'use strict';
 // Offline shell: precache core files, then stale-while-revalidate for same-origin GETs.
-const V = 'mdstudio-v3';
+const V = 'mdstudio-v4';
 const CORE = ['/', '/guide', '/privacy', '/terms', '/site.webmanifest', '/favicon.ico', '/assets/css/style.css', '/assets/css/hljs.css', '/assets/css/legal.css', '/assets/css/guide.css',
   '/assets/js/i18n.js', '/assets/js/app.js', '/assets/js/github.js', '/assets/js/ui.js', '/assets/js/visits.js', '/assets/js/legal.js',
   '/assets/vendor/marked.umd.js', '/assets/vendor/purify.min.js', '/assets/vendor/highlight.min.js',

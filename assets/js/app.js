@@ -732,6 +732,7 @@ function renderTabs() {
   }));
 }
 const dirState = new Map(), sel = new Set();
+const RM_IC = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg>';
 let selMode = false;
 const under = pre => [...S.files.keys()].filter(p => p.startsWith(pre + '/'));
 function syncSel() {
@@ -742,7 +743,11 @@ function syncSel() {
     c.indeterminate = n > 0 && n < l.length;
   });
   $('#btn-sel').setAttribute('aria-pressed', selMode);
-  $('#btn-seldel').hidden = !selMode || !sel.size;
+  $('#sel-bar').hidden = !selMode;
+  $('#btn-seldel').disabled = !sel.size;
+  const all = S.files.size > 0 && sel.size === S.files.size, sa = $('#sel-all');
+  sa.dataset.i18n = all ? 'sel.none' : 'sel.all';
+  sa.textContent = t(sa.dataset.i18n);
   $('#sel-n').textContent = sel.size ? ' ' + sel.size : '';
 }
 function setSel(on) { selMode = on; if (!on) sel.clear(); renderTree(); }
@@ -765,8 +770,15 @@ function renderTree() {
         b.textContent = k;
         b.title = v;
         b.dataset.path = v;
-        if (selMode) { const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'pk'; c.dataset.path = v; c.ariaLabel = k; li.classList.add('pk-row'); li.append(c); }
-        li.append(b);
+        const fr = document.createElement('button');
+        fr.type = 'button';
+        fr.className = 'rm';
+        fr.dataset.path = v;
+        fr.title = fr.ariaLabel = t('rm.title') + ': ' + k;
+        fr.innerHTML = RM_IC;
+        li.classList.add('frow');
+        if (selMode) { const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'pk'; c.dataset.path = v; c.ariaLabel = k; li.append(c); }
+        li.append(b, fr);
       } else {
         const d = document.createElement('details'), s = document.createElement('summary'), np = pre ? pre + '/' + k : k;
         const lb = document.createElement('span'), rm = document.createElement('button');
@@ -776,8 +788,8 @@ function renderTree() {
         rm.type = 'button';
         rm.className = 'rm';
         rm.dataset.prefix = np;
-        rm.title = rm.ariaLabel = t('rm.title');
-        rm.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/assets/icons/sprite.svg#trash-2"/></svg>';
+        rm.title = rm.ariaLabel = t('rm.title') + ': ' + k;
+        rm.innerHTML = RM_IC;
         if (selMode) { const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'pk'; c.dataset.prefix = np; c.ariaLabel = k; s.append(c); }
         s.append(lb, rm);
         d.append(s, build(v, np));
@@ -789,6 +801,7 @@ function renderTree() {
   };
   if (Object.keys(root).length) tree.replaceChildren(build(root));
   else { const p = document.createElement('p'); p.className = 'empty-tree'; p.textContent = t('tree.empty'); tree.replaceChildren(p); }
+  tree.classList.toggle('selecting', selMode);
   syncSel();
 }
 function loadEditor() {
@@ -910,7 +923,7 @@ document.addEventListener('keydown', e => {
 });
 tree.addEventListener('click', e => {
   const r = e.target.closest('.rm');
-  if (r) { e.preventDefault(); e.stopPropagation(); removeFiles([...S.files.keys()].filter(p => p.startsWith(r.dataset.prefix + '/'))); return; }
+  if (r) { e.preventDefault(); e.stopPropagation(); removeFiles(r.dataset.path ? [r.dataset.path] : under(r.dataset.prefix)); return; }
   const pk = e.target.closest('.pk');
   if (pk) {
     for (const p of pk.dataset.prefix ? under(pk.dataset.prefix) : [pk.dataset.path]) pk.checked ? sel.add(p) : sel.delete(p);
@@ -925,6 +938,13 @@ tree.addEventListener('click', e => {
 });
 $('#btn-sel').addEventListener('click', () => setSel(!selMode));
 $('#btn-seldel').addEventListener('click', () => { if (removeFiles([...sel])) setSel(false); });
+$('#btn-selall').addEventListener('click', () => {
+  const all = sel.size === S.files.size;
+  sel.clear();
+  if (!all) for (const p of S.files.keys()) sel.add(p);
+  syncSel();
+});
+$('#btn-seldone').addEventListener('click', () => setSel(false));
 tabsEl.addEventListener('click', e => {
   const x = e.target.closest('[data-close]'), b = e.target.closest('.tab-name');
   if (x) closeTab(x.dataset.close); else if (b) openTab(b.dataset.path);
@@ -974,7 +994,11 @@ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.servi
 $('#btn-lang').addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); applyI18n(); renderAll(); });
 $('#btn-tree').addEventListener('click', () => app.classList.toggle('tree-open'));
 new MutationObserver(() => $('#btn-tree').setAttribute('aria-expanded', app.classList.contains('tree-open'))).observe(app, { attributes: true, attributeFilter: ['class'] });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') app.classList.remove('tree-open'); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  app.classList.remove('tree-open');
+  if (selMode && e.target.closest && e.target.closest('#side')) setSel(false);
+});
 $('.work').addEventListener('click', e => { if (!e.target.closest('[data-act="gh"], [data-gh-ex]')) app.classList.remove('tree-open'); });
 $('.welcome').addEventListener('click', e => {
   const ex = e.target.closest('[data-gh-ex]');
