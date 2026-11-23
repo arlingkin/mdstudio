@@ -884,6 +884,13 @@ function setAccent(a, say) {
   LS.set('mdstudio-accent', a);
   if (say) toast(t('acc.set', { c: t('acc.' + a) }));
 }
+function syncPrefs() {
+  const th = LS.get('mdstudio-theme', 'dark') === 'light' ? 'light' : 'dark', ac = LS.get('mdstudio-accent', 'lime');
+  if (th !== theme) { theme = th; document.documentElement.dataset.theme = th; render(); }
+  if (ACCENTS.includes(ac) && ac !== accent) { accent = ac; document.documentElement.dataset.accent = ac; }
+}
+addEventListener('storage', e => { if (!e.key || e.key === 'mdstudio-theme' || e.key === 'mdstudio-accent') syncPrefs(); });
+addEventListener('pageshow', e => { if (e.persisted) syncPrefs(); });
 function setMode(m) {
   app.dataset.mode = m;
   $('#btn-ro').hidden = m === 'preview';

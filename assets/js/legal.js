@@ -6,12 +6,16 @@ const LS = {
 };
 let lang = LS.get('mdstudio-lang', /^id/i.test(navigator.language) ? 'id' : 'en') === 'id' ? 'id' : 'en';
 let theme = LS.get('mdstudio-theme', 'dark') === 'light' ? 'light' : 'dark';
+const ACCENTS = ['lime', 'blue', 'pink', 'amber', 'violet'];
+const readAccent = () => { const a = LS.get('mdstudio-accent', 'lime'); return ACCENTS.includes(a) ? a : 'lime'; };
+let accent = readAccent();
 const bl = document.getElementById('btn-lang');
 const bt = document.getElementById('btn-theme');
 const bls = bl.querySelector('span'), bts = bt.querySelector('span');
 const apply = () => {
   document.documentElement.lang = lang;
   document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.accent = accent;
   bls.textContent = lang.toUpperCase();
   bts.textContent = lang === 'id' ? 'tema' : 'theme';
   bl.title = lang === 'id' ? 'Bahasa' : 'Language';
@@ -28,5 +32,8 @@ document.querySelectorAll('.legal-in > [data-l]').forEach(box => {
 });
 bl.addEventListener('click', () => { lang = lang === 'en' ? 'id' : 'en'; LS.set('mdstudio-lang', lang); apply(); });
 bt.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; LS.set('mdstudio-theme', theme); apply(); });
+const sync = () => { theme = LS.get('mdstudio-theme', 'dark') === 'light' ? 'light' : 'dark'; accent = readAccent(); apply(); };
+addEventListener('storage', e => { if (!e.key || e.key === 'mdstudio-theme' || e.key === 'mdstudio-accent') sync(); });
+addEventListener('pageshow', e => { if (e.persisted) sync(); });
 apply();
 })();
